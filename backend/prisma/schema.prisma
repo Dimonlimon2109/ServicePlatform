@@ -1,0 +1,95 @@
+generator client {
+  provider      = "prisma-client-js"
+  enableTracing = true
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  USER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id               String         @id @default(uuid())
+  firstName        String
+  lastName         String
+  email            String         @unique
+  password         String
+  phone            String
+  profilePhotoPath String?
+  userType         UserType
+  createdAt        DateTime       @default(now())
+  services         Service[]
+  bookings         Booking[]
+  reviews          Review[]
+  sentMessages     Message[]      @relation("SentMessages")
+  receivedMessages Message[]      @relation("ReceivedMessages")
+  refreshTokens    RefreshToken[]
+}
+
+model Service {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  price       Decimal   @db.Decimal(10, 2)
+  category    String
+  photoPath   String
+  duration    Int
+  createdAt   DateTime  @default(now())
+  providerId  String
+  provider    User      @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
+  reviews     Review[]
+}
+
+model Booking {
+  id        String        @id @default(uuid())
+  date      DateTime
+  status    BookingStatus
+  createdAt DateTime      @default(now())
+  serviceId String
+  userId    String
+  service   Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+  serviceId String
+  userId    String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  content     String
+  sentAt      DateTime @default(now())
+  senderId    String
+  recipientId String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
