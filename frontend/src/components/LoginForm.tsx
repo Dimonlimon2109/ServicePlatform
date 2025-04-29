@@ -1,23 +1,22 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { login } from '../redux/authSlice';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import {authLogin} from '../api/authApi.ts';
+import axios from '../api/axiosInstance.ts';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const handleLogin = async () => {
         try {
-            const response = await authLogin({ email, password });
-            const { accessToken, refreshToken } = response.data;
+            const response = await axios.post(`/auth/login`, {email, password});
+            const { accessToken, refreshToken, user } = response.data;
 
             // Сохраняем токены в Redux
-            dispatch(login({ accessToken, refreshToken }));
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+            localStorage.setItem('userType', user.userType);
 
             navigate('/');
         } catch (error) {

@@ -73,13 +73,17 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto): Promise<Tokens> {
+  async login(loginDto: LoginDto): Promise<{ accessToken: string; refreshToken: string; user: Omit<User, 'password'> }> {
     const user = await this.validateUser(loginDto.email, loginDto.password);
 
     const tokens = await this.jwtTokensService.generateTokens(user.id, user.email, user.userType as Role);
     await this.jwtTokensService.storeRefreshToken(user.id, tokens.refreshToken);
 
-    return tokens;
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user,
+    };
   }
 
   async refreshTokens(refreshToken : string): Promise<Tokens> {

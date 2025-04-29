@@ -1,5 +1,3 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateServiceDto } from './create-service.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, IsNumber, IsInt, Min } from 'class-validator';
 import {Transform} from "class-transformer";

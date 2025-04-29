@@ -1,41 +1,40 @@
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout, selectIsAuthenticated } from '../redux/authSlice';
 
 const Header = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const isAuthenticated = useSelector(selectIsAuthenticated);
-
-    const handleLogin = () => {
-        navigate('/login');
-    };
-
-    const handleRegister = () => {
-        navigate('/register');
-    };
-
+    const handleLogin = () => navigate('/login');
+    const handleRegister = () => navigate('/register');
     const handleLogout = () => {
-        dispatch(logout());
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userType');
         navigate('/');
     };
 
     return (
         <AppBar position="static">
             <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography
-                    variant="h6"
-                    component="div"
-                    sx={{ cursor: 'pointer' }}
-                    onClick={() => navigate('/')}
-                >
-                    Главная
-                </Typography>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <Typography
+                        variant="h6"
+                        component="div"
+                        sx={{ cursor: 'pointer' }}
+                        onClick={() => navigate('/')}
+                    >
+                        Главная
+                    </Typography>
+                    <Button color="inherit" onClick={() => navigate('/catalog')}>
+                        Каталог
+                    </Button>
+                    {localStorage.userType === 'ADMIN' && (
+                        <Button color="inherit" onClick={() => navigate('/users')}>
+                            Пользователи
+                        </Button>
+                    )}
+                </Box>
                 <Box>
-                    {!isAuthenticated ? (
+                    {!localStorage.accessToken ? (
                         <>
                             <Button color="inherit" onClick={handleLogin}>
                                 Войти
@@ -45,9 +44,14 @@ const Header = () => {
                             </Button>
                         </>
                     ) : (
-                        <Button color="inherit" onClick={handleLogout}>
-                            Выйти
-                        </Button>
+                        <>
+                            <Button color="inherit" onClick={() => navigate('/profile')}>
+                                Профиль
+                            </Button>
+                            <Button color="inherit" onClick={handleLogout}>
+                                Выйти
+                            </Button>
+                        </>
                     )}
                 </Box>
             </Toolbar>

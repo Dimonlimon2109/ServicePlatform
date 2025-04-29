@@ -9,7 +9,7 @@ import {
   UseGuards,
   Request,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors, Query
 } from '@nestjs/common';
 import { ServicesService } from '../services/services.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
@@ -66,10 +66,15 @@ export class ServicesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Получить все услуги' })
-  @ApiResponse({ status: 200, description: 'Все доступные услуги.' })
-  findAll() {
-    return this.servicesService.findAll();
+  @ApiOperation({ summary: 'Получить все услуги с пагинацией' })
+  @ApiResponse({ status: 200, description: 'Список услуг с пагинацией.' })
+  async findAll(
+      @Query('page') page: string = '1',
+      @Query('limit') limit: string = '10',
+  ) {
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+    return this.servicesService.findAll(pageNumber, limitNumber);
   }
 
   @Get(':id')

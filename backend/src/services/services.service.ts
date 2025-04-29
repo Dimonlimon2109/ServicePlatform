@@ -39,13 +39,30 @@ export class ServicesService {
     });
   }
 
-  async findAll() {
-    return this.prisma.service.findMany({
-      include: {
-        provider: true,
-        reviews: true,
+  async findAll(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
+    const [services, total] = await this.prisma.$transaction([
+      this.prisma.service.findMany({
+        skip,
+        take: limit,
+        include: {
+          provider: true,
+          reviews: true,
+        },
+      }),
+      this.prisma.service.count(),
+    ]);
+
+    return {
+      data: services,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
-    });
+    };
   }
 
   async findOne(id: string) {

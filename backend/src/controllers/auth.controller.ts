@@ -1,12 +1,12 @@
-import { 
+import {
   Controller,
   Post,
   Body,
-  UseGuards, 
-  Req, 
-  HttpCode, 
-  HttpStatus, 
-  BadRequestException, 
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
   NotFoundException,
   UploadedFile,
   UseInterceptors } from '@nestjs/common';
@@ -18,6 +18,7 @@ import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { Tokens } from '../interfaces/tokens.interface';
 import { UploadService } from '../services/upload.service';
+import {User} from "@prisma/client";
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -69,14 +70,27 @@ async register(
 
   @ApiOperation({ summary: 'Аутентификация пользователя' })
   @ApiBody({ type: LoginDto })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Успешный вход',
     schema: {
       type: 'object',
       properties: {
         accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR...' },
         refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR...' },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            email: { type: 'string' },
+            firstName: { type: 'string' },
+            lastName: { type: 'string' },
+            phone: { type: 'string' },
+            userType: { type: 'string' },
+            profilePhotoPath: { type: 'string' },
+            // добавьте другие поля, если они есть в модели User
+          },
+        },
       },
     },
   })
@@ -92,9 +106,12 @@ async register(
   })
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginDto): Promise<Tokens> {
+  async login(
+      @Body() loginDto: LoginDto,
+  ): Promise<{ accessToken: string; refreshToken: string; user: Omit<User, 'password'> }> {
     return this.authService.login(loginDto);
   }
+
 
   @ApiOperation({ summary: 'Обновление access/refresh токенов по refresh токену' })
   @ApiBody({
@@ -157,4 +174,4 @@ async logout(@Req() req: Request): Promise<{ message: string }> {
   return this.authService.logout(accessToken);
 }
 
-} 
+}
