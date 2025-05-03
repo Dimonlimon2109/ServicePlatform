@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request
+  Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, Put
 } from '@nestjs/common';
 import { BookingsService } from '../services/bookings.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
@@ -57,21 +57,57 @@ export class BookingsController {
   }
 
   @Get('user/me')
-  @ApiOperation({ summary: 'Получить свои бронирования' })
+  @ApiOperation({ summary: 'Получить свои бронирования с пагинацией и фильтрацией' })
   @ApiResponse({ status: 200, description: 'Возвращает бронирования текущего пользователя.' })
-  findMyBookings(@Request() req) {
-    return this.bookingsService.findByUser(req.user.id);
+  @ApiParam({ name: 'status', required: false, description: 'Фильтрация по статусу' })
+  @ApiParam({ name: 'startDate', required: false, description: 'Дата начала диапазона' })
+  @ApiParam({ name: 'endDate', required: false, description: 'Дата конца диапазона' })
+  @ApiParam({ name: 'page', required: false, description: 'Номер страницы (по умолчанию 1)' })
+  @ApiParam({ name: 'limit', required: false, description: 'Количество элементов на странице (по умолчанию 10)' })
+  findMyBookings(
+      @Request() req,
+      @Query('status') status?: string,
+      @Query('startDate') startDate?: string,
+      @Query('endDate') endDate?: string,
+      @Query('page') page = '1',
+      @Query('limit') limit = '10',
+  ) {
+    return this.bookingsService.findByUser(req.user.id, {
+      status,
+      startDate,
+      endDate,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+    });
   }
-
   @Get('service/:serviceId')
-  @ApiOperation({ summary: 'Получить бронирования по ID услуги' })
+  @ApiOperation({ summary: 'Получить бронирования по ID услуги с пагинацией и фильтрами' })
   @ApiParam({ name: 'serviceId', description: 'Идентификатор услуги' })
+  @ApiParam({ name: 'status', required: false, description: 'Фильтрация по статусу' })
+  @ApiParam({ name: 'startDate', required: false, description: 'Дата начала диапазона' })
+  @ApiParam({ name: 'endDate', required: false, description: 'Дата конца диапазона' })
+  @ApiParam({ name: 'page', required: false, description: 'Номер страницы (по умолчанию 1)' })
+  @ApiParam({ name: 'limit', required: false, description: 'Элементов на странице (по умолчанию 10)' })
   @ApiResponse({ status: 200, description: 'Возвращает список бронирований услуги.' })
-  findByService(@Param('serviceId') serviceId: string) {
-    return this.bookingsService.findByService(serviceId);
+  findByService(
+      @Param('serviceId') serviceId: string,
+      @Query('status') status?: string,
+      @Query('startDate') startDate?: string,
+      @Query('endDate') endDate?: string,
+      @Query('page') page = '1',
+      @Query('limit') limit = '10',
+  ) {
+    return this.bookingsService.findByService(serviceId, {
+      status,
+      startDate,
+      endDate,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+    });
   }
 
-  @Patch(':id')
+
+  @Put(':id')
   @ApiOperation({ summary: 'Обновить бронь' })
   @ApiParam({ name: 'id', description: 'Идентификатор брони' })
   @ApiResponse({ status: 200, description: 'Бронирование успешно обновлено.' })

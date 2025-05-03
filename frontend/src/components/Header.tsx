@@ -12,8 +12,11 @@ const Header = () => {
         navigate('/');
     };
 
+    const isAuthenticated = Boolean(localStorage.accessToken);
+    const userType = localStorage.userType;
+
     return (
-        <AppBar position="static">
+        <AppBar position="sticky">
             <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <Typography
@@ -27,14 +30,22 @@ const Header = () => {
                     <Button color="inherit" onClick={() => navigate('/catalog')}>
                         Каталог
                     </Button>
-                    {localStorage.userType === 'ADMIN' && (
+                    {userType === 'ADMIN' && (
                         <Button color="inherit" onClick={() => navigate('/users')}>
                             Пользователи
                         </Button>
                     )}
+                        <Button color="inherit" onClick={() => navigate('/services/my')}>
+                            Мои услуги
+                        </Button>
+                    {isAuthenticated && (
+                        <Button color="inherit" onClick={() => navigate('/bookings')}>
+                            Бронирования
+                        </Button>
+                    )}
                 </Box>
                 <Box>
-                    {!localStorage.accessToken ? (
+                    {!isAuthenticated ? (
                         <>
                             <Button color="inherit" onClick={handleLogin}>
                                 Войти

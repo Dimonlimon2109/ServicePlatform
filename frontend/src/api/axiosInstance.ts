@@ -23,48 +23,45 @@ instance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // Показываем ошибки, если это не 401
-        if (error.response?.status !== 401) {
-            if (error.response?.data?.Errors) {
-                error.response.data.Errors.forEach((err: { ErrorMessage: string }) => {
-                    toast.error(err.ErrorMessage);
-                });
-            } else {
-                toast.error('Произошла ошибка при выполнении запроса');
+        const isLoginRequest = originalRequest.url?.includes('/auth/login');
+
+        if (error.response?.status === 401 && !isLoginRequest && !originalRequest._retry) {
+            if (originalRequest.url.includes('/auth/refresh')) {
+                return Promise.reject(error);
             }
 
-            return Promise.reject(error);
-        }
-
-        // === Обработка 401 и обновление токена ===
-        if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (!refreshToken) {
+                window.location.href = '/login';
+                return Promise.reject(error);
+            }
 
             try {
-                const refreshToken = localStorage.getItem('refreshToken');
-                const accessToken = localStorage.getItem('accessToken');
-
                 const response = await axios.post('http://localhost:3000/auth/refresh', {
-                    accessToken,
                     refreshToken,
                 });
 
                 const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
 
-                // Сохраняем новые токены
                 localStorage.setItem('accessToken', newAccessToken);
                 localStorage.setItem('refreshToken', newRefreshToken);
 
-                // Повторный запрос с новым токеном
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
                 return instance(originalRequest);
             } catch (refreshError) {
-                console.error('Ошибка обновления токена:', refreshError);
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
                 window.location.href = '/login';
+                return Promise.reject(refreshError);
             }
+        }
+
+        if (error.response?.data?.Errors) {
+            error.response.data.Errors.forEach((err:{ErrorMessage:string}) => {
+                toast.error(err.ErrorMessage);
+            });
         }
 
         return Promise.reject(error);

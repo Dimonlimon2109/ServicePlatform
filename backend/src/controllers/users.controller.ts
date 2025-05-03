@@ -37,8 +37,6 @@ export class UsersController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Получить пользователя по id' })
   @ApiParam({ name: 'id', description: 'Идентификатор пользователя' })
@@ -98,4 +96,30 @@ export class UsersController {
     }
     return this.usersService.remove(id);
   }
+
+
+  @Patch(':id/block')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Заблокировать пользователя' })
+  @ApiParam({ name: 'id', description: 'ID пользователя' })
+  @ApiResponse({ status: 200, description: 'Пользователь заблокирован' })
+  @ApiResponse({ status: 404, description: 'Пользователь не найден' })
+  blockUser(@Param('id') id: string) {
+    return this.usersService.toggleBlockUser(id, true);
+  }
+
+  @Patch(':id/unblock')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Разблокировать пользователя' })
+  @ApiParam({ name: 'id', description: 'ID пользователя' })
+  @ApiResponse({ status: 200, description: 'Пользователь разблокирован' })
+  @ApiResponse({ status: 404, description: 'Пользователь не найден' })
+  unblockUser(@Param('id') id: string) {
+    return this.usersService.toggleBlockUser(id, false);
+  }
+
 }

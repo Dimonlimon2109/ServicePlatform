@@ -16,7 +16,7 @@ backend/.env.local
 backend/.env.production
 backend/.env.development
 backend/.vscode/
-backend/uploads/
+backend/src/uploads
 
 # Игнорирование файлов для Frontend (React + Redux)
 frontend/node_modules/

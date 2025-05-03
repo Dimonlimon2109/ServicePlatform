@@ -9,11 +9,20 @@ import {
   UseGuards,
   Request,
   UploadedFile,
-  UseInterceptors, Query
+  UseInterceptors, Query, Put
 } from '@nestjs/common';
 import { ServicesService } from '../services/services.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import {ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam, ApiConsumes} from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiParam,
+  ApiConsumes,
+  ApiQuery, ApiOkResponse, ApiUnauthorizedResponse
+} from '@nestjs/swagger';
 import {UploadService} from "../services/upload.service";
 import {FileInterceptor} from "@nestjs/platform-express";
 import {CreateServiceDto} from "../dto/create-service.dto";
@@ -66,15 +75,25 @@ export class ServicesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Получить все услуги с пагинацией' })
-  @ApiResponse({ status: 200, description: 'Список услуг с пагинацией.' })
-  async findAll(
+  @ApiOperation({ summary: 'Получить все услуги с фильтрацией и пагинацией' })
+  @ApiResponse({ status: 200, description: 'Список услуг с пагинацией и фильтрами.' })
+  async findAllWithFilters(
       @Query('page') page: string = '1',
       @Query('limit') limit: string = '10',
+      @Query('minPrice') minPrice?: string,
+      @Query('maxPrice') maxPrice?: string,
+      @Query('category') category?: string,
   ) {
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
-    return this.servicesService.findAll(pageNumber, limitNumber);
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    const filters = {
+      minPrice: minPrice ? parseFloat(minPrice) : undefined,
+      maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+      category,
+    };
+
+    return this.servicesService.findAll(pageNumber, limitNumber, filters);
   }
 
   @Get(':id')
@@ -88,10 +107,42 @@ export class ServicesController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @Get('provider/me')
-  @ApiOperation({ summary: 'Получить услуги текущего пользователя' })
-  @ApiResponse({ status: 200, description: 'Услуги текущего провайдера.' })
-  findMyServices(@Request() req) {
-    return this.servicesService.findByProvider(req.user.id);
+  @ApiOperation({ summary: 'Получить список услуг текущего провайдера' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Номер страницы (по умолчанию 1)' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Количество элементов на странице (по умолчанию 10)' })
+  @ApiOkResponse({
+    description: 'Успешный ответ. Возвращает список услуг текущего пользователя.',
+    schema: {
+      example: {
+        data: [
+          {
+            id: '1',
+            title: 'Услуга 1',
+            description: 'Описание услуги',
+            price: 100,
+            rating: 4.5,
+            provider: { id: '123', name: 'Провайдер' },
+            reviews: [{ id: 'r1', comment: 'Отлично!' }]
+          }
+        ],
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1
+        }
+      }
+    }
+  })
+  @ApiUnauthorizedResponse({ description: 'Пользователь не авторизован' })
+  findMyServices(
+      @Request() req,
+      @Query('page') page: string = '1',
+      @Query('limit') limit: string = '10'
+  ) {
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+    return this.servicesService.findByProvider(req.user.id, pageNumber, limitNumber);
   }
 
   @Get('category/:category')
@@ -104,7 +155,7 @@ export class ServicesController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
-  @Patch(':id')
+  @Put(':id')
   @UseInterceptors(FileInterceptor('photo', {
     storage: new UploadService().getStorage(),
   }))

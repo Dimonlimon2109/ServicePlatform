@@ -64,6 +64,10 @@ export class AuthService {
       throw new NotFoundException('Пользователя с данным email не существует');
     }
 
+    if (user.isBlocked) {
+      throw new UnauthorizedException('Пользователь заблокирован');
+    }
+
     if (await bcrypt.compare(password, user.password)) {
       const { password, ...result } = user;
       return result;

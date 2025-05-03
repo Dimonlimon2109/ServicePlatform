@@ -113,4 +113,21 @@ export class UsersService {
 
     return { message: 'User deleted successfully' };
   }
-} 
+
+  async toggleBlockUser(id: string, isBlocked: boolean) {
+    const user = await this.findOne(id);
+
+    return this.prisma.user.update({
+      where: { id },
+      data: { isBlocked },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        isBlocked: true,
+      },
+    });
+  }
+
+}

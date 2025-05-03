@@ -29,6 +29,7 @@ model User {
   phone            String
   profilePhotoPath String?
   userType         UserType
+  isBlocked        Boolean        @default(false)
   createdAt        DateTime       @default(now())
   services         Service[]
   bookings         Booking[]

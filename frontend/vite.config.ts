@@ -6,5 +6,11 @@ export default defineConfig({
   server: {
     port: 3001, // Здесь указывается нужный вам порт
     open: true, // Автоматически открывать браузер (опционально)
+    proxy: {
+      '/uploads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
 });

@@ -57,25 +57,111 @@ export class BookingsService {
     return booking;
   }
 
-  async findByUser(userId: string) {
-    return this.prisma.booking.findMany({
-      where: { userId },
-      include: {
-        service: true,
-        user: true,
+  async findByUser(
+      userId: string,
+      options?: {
+        status?: string;
+        startDate?: string;
+        endDate?: string;
+        page?: number;
+        limit?: number;
       },
-    });
+  ) {
+    const where: any = {
+      userId,
+    };
+
+    if (options?.status) {
+      where.status = options.status;
+    }
+
+    if (options?.startDate || options?.endDate) {
+      where.date = {};
+      if (options.startDate) {
+        where.date.gte = new Date(options.startDate);
+      }
+      if (options.endDate) {
+        where.date.lte = new Date(options.endDate);
+      }
+    }
+
+    const page = options?.page ?? 1;
+    const limit = options?.limit ?? 10;
+    const skip = (page - 1) * limit;
+    const [items, total] = await Promise.all([
+      this.prisma.booking.findMany({
+        where,
+        include: {
+          service: true,
+          user: true,
+        },
+        skip,
+        take: limit,
+        orderBy: { date: 'desc' },
+      }),
+      this.prisma.booking.count({ where }),
+    ]);
+
+    return {
+      total,
+      page,
+      limit,
+      items,
+    };
   }
 
-  async findByService(serviceId: string) {
-    return this.prisma.booking.findMany({
-      where: { serviceId },
-      include: {
-        service: true,
-        user: true,
-      },
-    });
+  async findByService(
+      serviceId: string,
+      options?: {
+        status?: string;
+        startDate?: string;
+        endDate?: string;
+        page?: number;
+        limit?: number;
+      }
+  ) {
+    const where: any = { serviceId };
+
+    if (options?.status) {
+      where.status = options.status;
+    }
+
+    if (options?.startDate || options?.endDate) {
+      where.date = {};
+      if (options.startDate) {
+        where.date.gte = new Date(options.startDate);
+      }
+      if (options.endDate) {
+        where.date.lte = new Date(options.endDate);
+      }
+    }
+
+    const page = options?.page ?? 1;
+    const limit = options?.limit ?? 10;
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      this.prisma.booking.findMany({
+        where,
+        include: {
+          service: true,
+          user: true,
+        },
+        skip,
+        take: limit,
+        orderBy: { date: 'desc' },
+      }),
+      this.prisma.booking.count({ where }),
+    ]);
+
+    return {
+      total,
+      page,
+      limit,
+      items,
+    };
   }
+
 
   async update(id: string, data: UpdateBookingData) {
     await this.findOne(id);
@@ -102,4 +188,4 @@ export class BookingsService {
 
     return { message: 'Booking deleted successfully' };
   }
-} 
+}

@@ -11,6 +11,12 @@ type CreateServiceData = {
   duration: number;
 };
 
+type ServiceFilters = {
+  minPrice?: number;
+  maxPrice?: number;
+  category?: string;
+};
+
 type UpdateServiceData = Partial<Omit<CreateServiceData, 'providerId'>>;
 
 @Injectable()
@@ -39,19 +45,36 @@ export class ServicesService {
     });
   }
 
-  async findAll(page: number, limit: number) {
+  async findAll(page: number, limit: number, filters: ServiceFilters) {
     const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      where.price = {};
+      if (filters.minPrice !== undefined) {
+        where.price.gte = filters.minPrice;
+      }
+      if (filters.maxPrice !== undefined) {
+        where.price.lte = filters.maxPrice;
+      }
+    }
+
+    if (filters.category) {
+      where.category = filters.category;
+    }
 
     const [services, total] = await this.prisma.$transaction([
       this.prisma.service.findMany({
         skip,
         take: limit,
+        where,
         include: {
           provider: true,
           reviews: true,
         },
       }),
-      this.prisma.service.count(),
+      this.prisma.service.count({ where }),
     ]);
 
     return {
@@ -70,7 +93,11 @@ export class ServicesService {
       where: { id },
       include: {
         provider: true,
-        reviews: true,
+        reviews: {
+          include:{
+            user:true
+          }
+        },
       },
     });
 
@@ -91,14 +118,29 @@ export class ServicesService {
     });
   }
 
-  async findByProvider(providerId: string) {
-    return this.prisma.service.findMany({
-      where: { providerId },
-      include: {
-        provider: true,
-        reviews: true,
-      },
-    });
+  async findByProvider(providerId: string, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const [services, total] = await this.prisma.$transaction([
+      this.prisma.service.findMany({
+        skip,
+        take: limit,
+        where: { providerId },
+        include: {
+          provider: true,
+          reviews: true,
+        },
+      }),
+      this.prisma.service.count(),
+    ]);
+    return {
+      data: services,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
   }
 
   async findMyServices(userId: string) {

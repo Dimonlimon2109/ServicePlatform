@@ -9,7 +9,8 @@ import {
   BadRequestException,
   NotFoundException,
   UploadedFile,
-  UseInterceptors } from '@nestjs/common';
+  UseInterceptors, UnauthorizedException
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from '../services/auth.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
@@ -103,6 +104,11 @@ async register(
     status: 404,
     description: 'Пользователь не найден',
     type: NotFoundException,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Пользователь заблокирован',
+    type: UnauthorizedException,
   })
   @Post('login')
   @HttpCode(HttpStatus.OK)

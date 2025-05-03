@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import Header from '../components/Header';
 
-const Home = () => {
+const HomePage = () => {
     return (
         <Box display="flex" flexDirection="column" minHeight="100vh">
             <Header />
@@ -24,4 +24,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default HomePage;

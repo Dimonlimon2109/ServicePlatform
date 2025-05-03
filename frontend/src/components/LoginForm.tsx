@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance.ts';
+import {toast} from "react-toastify";
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -10,23 +11,33 @@ const Login = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await axios.post(`/auth/login`, {email, password});
+            const response = await axios.post(`/auth/login`, { email, password });
             const { accessToken, refreshToken, user } = response.data;
 
-            // Сохраняем токены в Redux
             localStorage.setItem('accessToken', accessToken);
             localStorage.setItem('refreshToken', refreshToken);
             localStorage.setItem('userType', user.userType);
-
             navigate('/');
-        } catch (error) {
-            console.error('Ошибка авторизации', error);
+        } catch (error: any) {
+            if (error.response?.status === 401) {
+                toast.error('Ваш аккаунт заблокирован. Обратитесь в поддержку.');
+            }
+            else if (error.response?.status === 404) {
+                toast.error('Пользователь не найден');
+            }
+            else if (error.response?.status === 400) {
+                toast.error('Неверный пароль');
+            }
+            else {
+                toast.error('Ошибка авторизации. Попробуйте снова.');
+            }
         }
     };
 
     return (
         <Box p={4}>
             <Typography variant="h4" gutterBottom>Войти в аккаунт</Typography>
+
             <TextField
                 label="Email"
                 variant="outlined"
