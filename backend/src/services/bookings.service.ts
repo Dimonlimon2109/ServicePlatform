@@ -5,12 +5,12 @@ type CreateBookingData = {
   serviceId: string;
   userId: string;
   date: Date;
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'PAID';
 };
 
 type UpdateBookingData = Partial<{
   date: Date;
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'PAID';
 }>;
 
 @Injectable()

@@ -1,18 +1,25 @@
 import {
-  Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, Put
+  Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, Put, Req, RawBodyRequest, Res
 } from '@nestjs/common';
 import { BookingsService } from '../services/bookings.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import {
   ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam
 } from '@nestjs/swagger';
+import {StripeService} from "../services/stripe.service";
+import Stripe from "stripe";
+import { Response, Request as ExpressRequest } from 'express';
+import {ConfigService} from "@nestjs/config";
+
 
 @ApiTags('Bookings')
 @Controller('bookings')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
 export class BookingsController {
-  constructor(private readonly bookingsService: BookingsService) {}
+  constructor(private readonly bookingsService: BookingsService,
+              private readonly stripeService: StripeService,
+              private readonly configService: ConfigService) {}
 
   @Post()
   @ApiOperation({ summary: 'Создать новую бронь' })
@@ -138,4 +145,35 @@ export class BookingsController {
   remove(@Param('id') id: string) {
     return this.bookingsService.remove(id);
   }
+
+  @Post('pay')
+  async payForBooking(
+      @Body() body: { bookingId: string; amount: number },
+  ) {
+    console.log(body);
+    return this.stripeService.createCheckoutSession({bookingId: body.bookingId, amount: body.amount});
+  }
+
+  @Post('webhook')
+  async handleStripeWebhook(
+      @Req() req: RawBodyRequest<ExpressRequest>,
+      @Res() res: Response
+  ) {
+    console.log('WEBHOOK!!!!!!!!!!!');
+    let event: Stripe.Event;
+    const signature = req.headers['stripe-signature'];
+    try {
+      event = this.stripeService.getStripe().webhooks.constructEvent(
+          req.rawBody,
+          signature,
+          process.env.STRIPE_WEBHOOK_SECRET,
+      );
+    } catch (err) {
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    await this.stripeService.handleWebhook(event);
+    res.status(200).json({ received: true });
+  }
+
 }

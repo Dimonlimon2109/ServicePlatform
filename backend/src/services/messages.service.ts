@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {ForbiddenException, Injectable, NotFoundException} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 type CreateMessageData = {
   content: string;
+  receiverId: string;
   senderId: string;
-  recipientId: string;
+
 };
 
 type UpdateMessageData = {
@@ -20,11 +21,11 @@ export class MessagesService {
       data: {
         content: data.content,
         senderId: data.senderId,
-        recipientId: data.recipientId,
+        receiverId: data.receiverId,
       },
       include: {
         sender: true,
-        recipient: true,
+        receiver: true,
       },
     });
   }
@@ -33,7 +34,7 @@ export class MessagesService {
     return this.prisma.message.findMany({
       include: {
         sender: true,
-        recipient: true,
+        receiver: true,
       },
     });
   }
@@ -43,7 +44,7 @@ export class MessagesService {
       where: { id },
       include: {
         sender: true,
-        recipient: true,
+        receiver: true,
       },
     });
 
@@ -59,12 +60,12 @@ export class MessagesService {
       where: {
         OR: [
           { senderId: userId },
-          { recipientId: userId },
+          { receiverId: userId },
         ],
       },
       include: {
         sender: true,
-        recipient: true,
+        receiver: true,
       },
     });
   }
@@ -73,19 +74,23 @@ export class MessagesService {
     return this.prisma.message.findMany({
       where: {
         OR: [
-          { senderId: userId1, recipientId: userId2 },
-          { senderId: userId2, recipientId: userId1 },
+          { senderId: userId1, receiverId: userId2 },
+          { senderId: userId2, receiverId: userId1 },
         ],
       },
       include: {
         sender: true,
-        recipient: true,
+        receiver: true,
       },
     });
   }
 
-  async update(id: string, data: UpdateMessageData) {
-    await this.findOne(id);
+  async update(id: string, data: UpdateMessageData, userId: string) {
+    const message = await this.findOne(id);
+
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('Вы не можете редактировать это сообщение');
+    }
 
     return this.prisma.message.update({
       where: { id },
@@ -94,18 +99,23 @@ export class MessagesService {
       },
       include: {
         sender: true,
-        recipient: true,
+        receiver: true,
       },
     });
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(id: string, userId: string) {
+    const message = await this.findOne(id);
+
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('Вы не можете удалить это сообщение');
+    }
 
     await this.prisma.message.delete({
       where: { id },
     });
 
-    return { message: 'Message deleted successfully' };
+    return { message: 'Сообщение успешно удалено' };
   }
-} 
+
+}

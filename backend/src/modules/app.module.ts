@@ -9,6 +9,7 @@ import { MessagesModule } from './messages.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import {ServeStaticModule} from "@nestjs/serve-static";
 import {join} from 'path';
+import {StripeModule} from "./stripe.module";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import {join} from 'path';
     BookingsModule,
     ReviewsModule,
     MessagesModule,
+    StripeModule,
   ]
 })
 export class AppModule {}

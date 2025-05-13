@@ -11,30 +11,18 @@ export class ReviewsService {
     serviceId: string;
     userId: string;
   }) {
-    // Check if service exists
+    // Проверка существования сервиса
     const service = await this.prisma.service.findUnique({
       where: { id: data.serviceId },
     });
 
     if (!service) {
-      throw new NotFoundException('Service not found');
+      throw new NotFoundException('Сервис не найден');
     }
 
-    // Validate rating
+    // Валидация рейтинга
     if (data.rating < 1 || data.rating > 5) {
-      throw new BadRequestException('Rating must be between 1 and 5');
-    }
-
-    // Check if user already reviewed this service
-    const existingReview = await this.prisma.review.findFirst({
-      where: {
-        serviceId: data.serviceId,
-        userId: data.userId,
-      },
-    });
-
-    if (existingReview) {
-      throw new BadRequestException('You have already reviewed this service');
+      throw new BadRequestException('Рейтинг должен быть между 1 и 5');
     }
 
     return this.prisma.review.create({
@@ -65,7 +53,7 @@ export class ReviewsService {
     });
 
     if (!review) {
-      throw new NotFoundException('Review not found');
+      throw new NotFoundException('Отзыв не найден');
     }
 
     return review;
@@ -95,11 +83,11 @@ export class ReviewsService {
     const review = await this.findOne(id);
 
     if (review.userId !== userId) {
-      throw new ForbiddenException('You can only update your own reviews');
+      throw new ForbiddenException('Вы можете редактировать только свои отзывы');
     }
 
     if (data.rating && (data.rating < 1 || data.rating > 5)) {
-      throw new BadRequestException('Rating must be between 1 and 5');
+      throw new BadRequestException('Рейтинг должен быть между 1 и 5');
     }
 
     return this.prisma.review.update({
@@ -116,13 +104,13 @@ export class ReviewsService {
     const review = await this.findOne(id);
 
     if (review.userId !== userId) {
-      throw new ForbiddenException('You can only delete your own reviews');
+      throw new ForbiddenException('Вы можете удалить только свои отзывы');
     }
 
     await this.prisma.review.delete({
       where: { id },
     });
 
-    return { message: 'Review deleted successfully' };
+    return { message: 'Отзыв успешно удалён' };
   }
-} 
+}

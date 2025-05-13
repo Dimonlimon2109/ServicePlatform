@@ -3,9 +3,14 @@ import { AppModule } from './modules/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
+import * as bodyParser from 'body-parser'; // импортируем body-parser
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+    app.use('/stripe/webhook', bodyParser.raw({ type: 'application/json' }));
+
+    // Остальные маршруты — обычный json
+    app.use(bodyParser.json());
 
   app.useGlobalFilters(new AllExceptionsFilter());
 
@@ -14,7 +19,7 @@ async function bootstrap() {
     origin: '*', // или конкретный адрес, например: 'http://localhost:3000'
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-  });
+});
 
   // Enable validation
   app.useGlobalPipes(new ValidationPipe({

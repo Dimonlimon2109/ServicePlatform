@@ -18,6 +18,7 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+  PAID
 }
 
 model User {
@@ -55,14 +56,15 @@ model Service {
 }
 
 model Booking {
-  id        String        @id @default(uuid())
-  date      DateTime
-  status    BookingStatus
-  createdAt DateTime      @default(now())
-  serviceId String
-  userId    String
-  service   Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String        @id @default(uuid())
+  date            DateTime
+  status          BookingStatus
+  createdAt       DateTime      @default(now())
+  serviceId       String
+  userId          String
+  stripeSessionId String?
+  service         Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Review {
@@ -77,13 +79,13 @@ model Review {
 }
 
 model Message {
-  id          String   @id @default(uuid())
-  content     String
-  sentAt      DateTime @default(now())
-  senderId    String
-  recipientId String
-  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  content    String
+  sentAt     DateTime @default(now())
+  senderId   String
+  receiverId String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 }
 
 model RefreshToken {

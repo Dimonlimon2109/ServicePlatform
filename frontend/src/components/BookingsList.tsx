@@ -7,12 +7,13 @@ import { useEffect, useState } from 'react';
 import axios from '../api/axiosInstance.ts';
 import dayjs from 'dayjs';
 
-const statusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'];
+const statusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', "PAID"];
 const statusTranslations: Record<string, string> = {
     PENDING: 'В ожидании',
     CONFIRMED: 'Подтверждено',
     CANCELLED: 'Отклонено',
     COMPLETED: 'Завершено',
+    PAID: 'Оплачено'
 };
 
 const BookingsList = () => {
@@ -53,6 +54,26 @@ const BookingsList = () => {
             status: 'COMPLETED',
         });
         fetchBookings();
+    };
+
+    const handlePayment = async (id: string, amount: number) => {
+        try {
+            // Запрос на создание сессии в Stripe
+            const response = await axios.post('/bookings/pay', {
+                bookingId: id,
+                amount: amount
+            });
+
+            // Если запрос прошёл успешно, получаем URL для перенаправления на Stripe Checkout
+            if (response.data.url) {
+                // Перенаправляем пользователя на страницу оплаты
+                window.location.href = response.data.url;
+            } else {
+                alert('Ошибка при создании сессии оплаты!');
+            }
+        } catch (error) {
+            alert('Ошибка при обработке запроса на оплату!');
+        }
     };
 
     return (
@@ -110,7 +131,7 @@ const BookingsList = () => {
                                         <Button
                                             variant="outlined"
                                             color="error"
-                                            disabled={!canCancel || booking.status === 'CANCELLED' || booking.status === 'COMPLETED'}
+                                            //disabled={!canCancel || booking.status === 'CANCELLED' || booking.status === 'COMPLETED'}
                                             onClick={() => handleCancel(booking.id)}
                                         >
                                             Отклонить
@@ -118,10 +139,18 @@ const BookingsList = () => {
                                         <Button
                                             variant="contained"
                                             color="success"
-                                            disabled={canComplete || booking.status === 'CANCELLED' || booking.status !== 'CONFIRMED' || booking.status === 'COMPLETED' }
+                                            //disabled={canComplete || booking.status === 'CANCELLED' || booking.status !== 'CONFIRMED' || booking.status === 'COMPLETED'}
                                             onClick={() => handleComplete(booking.id)}
                                         >
                                             Подтвердить выполнение
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            disabled={booking.status !== 'COMPLETED'}
+                                            onClick={() => handlePayment(booking.id, booking.service.price)}
+                                        >
+                                            Оплатить
                                         </Button>
                                     </Box>
                                 </CardContent>
