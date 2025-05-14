@@ -48,6 +48,7 @@ model Service {
   category    String
   photoPath   String
   duration    Int
+  rating      Float     @default(0.0)
   createdAt   DateTime  @default(now())
   providerId  String
   provider    User      @relation(fields: [providerId], references: [id], onDelete: Cascade)

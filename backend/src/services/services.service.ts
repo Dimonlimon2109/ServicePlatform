@@ -15,6 +15,8 @@ type ServiceFilters = {
   minPrice?: number;
   maxPrice?: number;
   category?: string;
+  minRating?: number;
+  title?: string;
 };
 
 type UpdateServiceData = Partial<Omit<CreateServiceData, 'providerId'>>;
@@ -62,6 +64,13 @@ export class ServicesService {
 
     if (filters.category) {
       where.category = filters.category;
+    }
+
+    if (filters.minRating !== undefined) {
+      where.rating = { gte: filters.minRating };
+    }
+    if (filters.title) {
+      where.title = { contains: filters.title, mode: 'insensitive' };
     }
 
     const [services, total] = await this.prisma.$transaction([
@@ -154,21 +163,29 @@ export class ServicesService {
   }
 
   async update(id: string, data: UpdateServiceData, userId: string) {
-    const service = await this.findOne(id);
+    const service = await this.prisma.service.findUnique({ where: { id } });
+
+    if (!service) {
+      throw new NotFoundException('Услуга не найдена');
+    }
 
     if (service.providerId !== userId) {
-      throw new ForbiddenException('You do not have permission to update this service.');
+      throw new ForbiddenException('Нет доступа к изменению этой услуги');
     }
+
+    // Исключаем возможность изменения поля rating
+    const { rating, ...sanitizedData } = data as any;
 
     return this.prisma.service.update({
       where: { id },
-      data,
+      data: sanitizedData,
       include: {
         provider: true,
         reviews: true,
       },
     });
   }
+
 
   async remove(id: string, userId: string) {
     const service = await this.findOne(id);

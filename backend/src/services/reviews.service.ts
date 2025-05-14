@@ -11,7 +11,6 @@ export class ReviewsService {
     serviceId: string;
     userId: string;
   }) {
-    // Проверка существования сервиса
     const service = await this.prisma.service.findUnique({
       where: { id: data.serviceId },
     });
@@ -20,19 +19,20 @@ export class ReviewsService {
       throw new NotFoundException('Сервис не найден');
     }
 
-    // Валидация рейтинга
     if (data.rating < 1 || data.rating > 5) {
       throw new BadRequestException('Рейтинг должен быть между 1 и 5');
     }
 
-    return this.prisma.review.create({
+    const review = await this.prisma.review.create({
       data,
-      include: {
-        service: true,
-        user: true,
-      },
+      include: { service: true, user: true },
     });
+
+    await this.updateServiceRating(data.serviceId);
+
+    return review;
   }
+
 
   async findAll() {
     return this.prisma.review.findMany({
@@ -79,7 +79,11 @@ export class ReviewsService {
     });
   }
 
-  async update(id: string, data: { rating?: number; comment?: string }, userId: string) {
+  async update(
+      id: string,
+      data: { rating?: number; comment?: string },
+      userId: string,
+  ) {
     const review = await this.findOne(id);
 
     if (review.userId !== userId) {
@@ -90,15 +94,19 @@ export class ReviewsService {
       throw new BadRequestException('Рейтинг должен быть между 1 и 5');
     }
 
-    return this.prisma.review.update({
+    const updatedReview = await this.prisma.review.update({
       where: { id },
       data,
-      include: {
-        service: true,
-        user: true,
-      },
+      include: { service: true, user: true },
     });
+
+    if (data.rating !== undefined && data.rating !== review.rating) {
+      await this.updateServiceRating(review.serviceId);
+    }
+
+    return updatedReview;
   }
+
 
   async remove(id: string, userId: string) {
     const review = await this.findOne(id);
@@ -111,6 +119,27 @@ export class ReviewsService {
       where: { id },
     });
 
+    await this.updateServiceRating(review.serviceId);
+
     return { message: 'Отзыв успешно удалён' };
   }
+
+
+  private async updateServiceRating(serviceId: string): Promise<void> {
+    const reviews = await this.prisma.review.findMany({
+      where: { serviceId },
+      select: { rating: true },
+    });
+
+    const avgRating =
+        reviews.length > 0
+            ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+            : 0;
+
+    await this.prisma.service.update({
+      where: { id: serviceId },
+      data: { rating: parseFloat(avgRating.toFixed(2)) }, // округление до 2 знаков
+    });
+  }
+
 }

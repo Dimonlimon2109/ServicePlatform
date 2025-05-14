@@ -76,13 +76,19 @@ export class ServicesController {
 
   @Get()
   @ApiOperation({ summary: 'Получить все услуги с фильтрацией и пагинацией' })
-  @ApiResponse({ status: 200, description: 'Список услуг с пагинацией и фильтрами.' })
+  @ApiQuery({ name: 'minPrice', required: false, type: Number })
+  @ApiQuery({ name: 'maxPrice', required: false, type: Number })
+  @ApiQuery({ name: 'category', required: false, type: String })
+  @ApiQuery({ name: 'minRating', required: false, type: Number })
+  @ApiQuery({ name: 'title', required: false, type: String })
   async findAllWithFilters(
       @Query('page') page: string = '1',
       @Query('limit') limit: string = '10',
       @Query('minPrice') minPrice?: string,
       @Query('maxPrice') maxPrice?: string,
       @Query('category') category?: string,
+      @Query('minRating') minRating?: string,
+      @Query('title') title?: string,
   ) {
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
@@ -91,10 +97,13 @@ export class ServicesController {
       minPrice: minPrice ? parseFloat(minPrice) : undefined,
       maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
       category,
+      minRating: minRating ? parseFloat(minRating) : undefined,
+      title
     };
 
     return this.servicesService.findAll(pageNumber, limitNumber, filters);
   }
+
 
   @Get(':id')
   @ApiOperation({ summary: 'Получить услугу по ID' })
