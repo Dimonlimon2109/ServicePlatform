@@ -10,6 +10,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import {ServeStaticModule} from "@nestjs/serve-static";
 import {join} from 'path';
 import {StripeModule} from "./stripe.module";
+import {ChatModule} from "../modules/chat.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import {StripeModule} from "./stripe.module";
     ReviewsModule,
     MessagesModule,
     StripeModule,
+      ChatModule,
   ]
 })
 export class AppModule {}

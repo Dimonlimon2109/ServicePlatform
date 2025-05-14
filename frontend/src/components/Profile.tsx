@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Typography, Avatar, CircularProgress } from '@mui/material';
+import {Box, Typography, Avatar, CircularProgress} from '@mui/material';
 import axios from '../api/axiosInstance.ts';
 import {useParams} from "react-router-dom";
 
@@ -33,7 +33,9 @@ export default function Profile() {
             <Typography variant="h5">{profile.firstName} {profile.lastName}</Typography>
             <Typography>Email: {profile.email}</Typography>
             <Typography>Телефон: {profile.phone}</Typography>
-            <Typography>Роль: {profile.userType}</Typography>
+            {profile.userType === 'ADMIN' && (
+                <Typography>Роль: {profile.userType}</Typography>
+            )}
         </Box>
     );
 }

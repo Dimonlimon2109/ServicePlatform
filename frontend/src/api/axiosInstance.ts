@@ -24,8 +24,9 @@ instance.interceptors.response.use(
         const originalRequest = error.config;
 
         const isLoginRequest = originalRequest.url?.includes('/auth/login');
+        const isUserMeRequest = originalRequest.url?.includes('/users/profile/me');
 
-        if (error.response?.status === 401 && !isLoginRequest && !originalRequest._retry) {
+        if (error.response?.status === 401 && !isLoginRequest && !isUserMeRequest && !originalRequest._retry) {
             if (originalRequest.url.includes('/auth/refresh')) {
                 return Promise.reject(error);
             }

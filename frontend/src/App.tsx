@@ -11,6 +11,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import BookingsPage from './pages/BookingsPage.tsx';
 import ServiceBookingsPage from './pages/ServiceBookingsPage.tsx';
+import ChatPage from './pages/ChatPage.tsx';
 
 function App() {
     return (
@@ -28,6 +29,7 @@ function App() {
                     <Route path="users/:id" element={<ProfilePage />} />
                     <Route path="/bookings" element={<BookingsPage />} />
                     <Route path="/services/:id/bookings" element={<ServiceBookingsPage />} />
+                    <Route path="/chat/:id" element={<ChatPage />} />
                 </Routes>
             <ToastContainer position="top-right" autoClose={3000}/>
         </BrowserRouter>
