@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-    Box, Typography, Button, CircularProgress, Card, CardMedia, Stack, Divider, Avatar
+    Box, Typography, Button, CircularProgress, Card, CardMedia, Stack, Divider, Avatar, Rating
 } from '@mui/material';
 import axios from '../api/axiosInstance';
 import BookingDialog from "./BookingDialog.tsx";
@@ -32,6 +32,18 @@ export default function ServiceDetails() {
 
         fetchService();
     }, [id]);
+
+    const handleDeleteReview = async (reviewId: string) => {
+        if (!window.confirm('Вы уверены, что хотите удалить отзыв?')) return;
+
+        try {
+            await axios.delete(`/reviews/${reviewId}`);
+            setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+        } catch (error) {
+            console.error('Ошибка при удалении отзыва:', error);
+        }
+    };
+
 
     if (loading) {
         return (
@@ -115,31 +127,46 @@ export default function ServiceDetails() {
                 {reviews.length === 0 ? (
                     <Typography color="text.secondary">Отзывов пока нет.</Typography>
                 ) : (
-                    reviews.map((review, index) => (
-                        <Box key={index} mb={3} display="flex" gap={2}>
-                            <Avatar
-                                variant="square"
-                                src={review.user?.profilePhotoPath || 'default.jpg'}
-                                sx={{
-                                    width: 128,              // можно изменить под нужный размер
-                                    height: 128,
-                                    borderRadius: 0,        // квадратная форма
-                                    objectFit: 'cover'      // изображение не искажается
-                                }}
-                            />
-                            <Box>
-                                <Typography variant="subtitle2">
-                                    {review.user?.firstName + review.user?.lastName}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    {review.comment}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                    Оценка: {review.rating}/5
-                                </Typography>
-                            </Box>
-                        </Box>
-                    ))
+                    <Stack spacing={3}>
+                        {reviews.map((review, index) => {
+                            const isOwnReview = review.user?.id === user?.id;
+
+                            return (
+                                <Card key={index} sx={{ p: 2, boxShadow: 2, position: 'relative' }}>
+                                    <Box display="flex" gap={2}>
+                                        <Avatar
+                                            src={review.user?.profilePhotoPath || 'default.jpg'}
+                                            sx={{
+                                                width: 64,
+                                                height: 64,
+                                                objectFit: 'cover',
+                                                border: '2px solid #ccc'
+                                            }}
+                                        />
+                                        <Box flex={1}>
+                                            <Typography variant="subtitle1" fontWeight="bold">
+                                                {review.user?.firstName} {review.user?.lastName}
+                                            </Typography>
+                                            <Rating value={review.rating} precision={0.5} readOnly size="small" />
+                                            <Typography variant="body2" color="text.secondary" mt={1}>
+                                                {review.comment}
+                                            </Typography>
+                                        </Box>
+                                        {isOwnReview && (
+                                            <Button
+                                                variant="text"
+                                                color="error"
+                                                onClick={() => handleDeleteReview(review.id)}
+                                                sx={{ alignSelf: 'flex-start' }}
+                                            >
+                                                Удалить
+                                            </Button>
+                                        )}
+                                    </Box>
+                                </Card>
+                            );
+                        })}
+                    </Stack>
                 )}
             </Box>
             <BookingDialog

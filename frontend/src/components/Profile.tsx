@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import {Box, Typography, Avatar, CircularProgress} from '@mui/material';
+import {Box, Typography, Avatar, CircularProgress, Button} from '@mui/material';
 import axios from '../api/axiosInstance.ts';
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 
 export default function Profile() {
     const [profile, setProfile] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
     const { id } = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -33,6 +34,15 @@ export default function Profile() {
             <Typography variant="h5">{profile.firstName} {profile.lastName}</Typography>
             <Typography>Email: {profile.email}</Typography>
             <Typography>Телефон: {profile.phone}</Typography>
+            {id && (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => navigate(`/chat/${id}`)}
+                >
+                    Написать сообщение
+                </Button>
+            )}
             {profile.userType === 'ADMIN' && (
                 <Typography>Роль: {profile.userType}</Typography>
             )}

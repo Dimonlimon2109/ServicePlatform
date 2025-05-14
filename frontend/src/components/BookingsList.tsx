@@ -1,11 +1,15 @@
 import {
     Box, Card, CardContent, Typography, Grid,
     FormControl, InputLabel, Select, MenuItem,
-    TextField, Pagination, Button
+    TextField, Pagination, Button,
+    DialogContent,
+    Dialog,
+    DialogTitle, DialogActions, Rating
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import axios from '../api/axiosInstance.ts';
 import dayjs from 'dayjs';
+import {toast} from "react-toastify";
 
 const statusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', "PAID"];
 const statusTranslations: Record<string, string> = {
@@ -23,6 +27,43 @@ const BookingsList = () => {
     const [endDate, setEndDate] = useState('');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [isReviewOpen, setIsReviewOpen] = useState(false);
+    const [reviewText, setReviewText] = useState('');
+    const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
+    const [reviewRating, setReviewRating] = useState<number | null>(null);
+
+
+    const handleOpenReviewModal = (serviceId: number) => {
+        setSelectedServiceId(serviceId);
+        setIsReviewOpen(true);
+    };
+
+    const handleCloseReviewModal = () => {
+        setIsReviewOpen(false);
+        setReviewText('');
+        setReviewRating(null);
+    };
+
+
+    const handleSubmitReview = async () => {
+        if (!selectedServiceId || !reviewRating) {
+            alert('Пожалуйста, укажите оценку и комментарий.');
+            return;
+        }
+console.log(reviewRating);
+        try {
+            await axios.post('/reviews', {
+                serviceId: selectedServiceId,
+                comment: reviewText,
+                rating: reviewRating
+            });
+            handleCloseReviewModal();
+            toast.success('Отзыв успешно добавлен');
+        } catch (error) {
+            toast.error('Ошибка при добавлении отзыва');
+        }
+    };
+
 
     const fetchBookings = async () => {
         const params: any = {
@@ -152,6 +193,14 @@ const BookingsList = () => {
                                         >
                                             Оплатить
                                         </Button>
+                                        <Button
+                                            variant="outlined"
+                                            color="secondary"
+                                            // disabled={booking.status !== 'COMPLETED' || booking.status !== 'PAID'}
+                                            onClick={() => handleOpenReviewModal(booking.service?.id)}
+                                        >
+                                            Оставить отзыв
+                                        </Button>
                                     </Box>
                                 </CardContent>
                             </Card>
@@ -167,6 +216,35 @@ const BookingsList = () => {
                     onChange={(e, val) => setPage(val)}
                 />
             </Box>
+            <Dialog open={isReviewOpen} onClose={handleCloseReviewModal} fullWidth maxWidth="sm">
+                <DialogTitle>Оставить отзыв</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Typography>Ваша оценка:</Typography>
+                        <Rating
+                            name="rating"
+                            value={reviewRating}
+                            onChange={(event, newValue) => {
+                                setReviewRating(newValue);
+                            }}
+                        />
+                        <TextField
+                            multiline
+                            fullWidth
+                            minRows={4}
+                            label="Ваш комментарий"
+                            value={reviewText}
+                            onChange={(e) => setReviewText(e.target.value)}
+                        />
+                    </Box>
+                </DialogContent>
+
+                <DialogActions>
+                    <Button onClick={handleCloseReviewModal}>Отмена</Button>
+                    <Button onClick={handleSubmitReview} variant="contained">Отправить</Button>
+                </DialogActions>
+            </Dialog>
+
         </>
     );
 };
