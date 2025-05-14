@@ -8,7 +8,7 @@ import {
   UseGuards,
   Request,
   HttpStatus,
-  HttpCode
+  HttpCode, Put
 } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
@@ -98,7 +98,7 @@ export class UsersController {
   }
 
 
-  @Patch(':id/block')
+  @Put(':id/block')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @ApiBearerAuth('access-token')
@@ -110,7 +110,7 @@ export class UsersController {
     return this.usersService.toggleBlockUser(id, true);
   }
 
-  @Patch(':id/unblock')
+  @Put(':id/unblock')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @ApiBearerAuth('access-token')

@@ -47,6 +47,7 @@ export class UsersService {
         phone: true,
         userType: true,
         profilePhotoPath: true,
+        isBlocked: true,
         createdAt: true,
       },
     });
@@ -63,6 +64,7 @@ export class UsersService {
         phone: true,
         userType: true,
         profilePhotoPath: true,
+        isBlocked: true,
         createdAt: true,
       },
     });
