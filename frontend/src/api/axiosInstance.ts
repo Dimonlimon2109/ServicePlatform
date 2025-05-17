@@ -26,14 +26,14 @@ instance.interceptors.response.use(
         const isLoginRequest = originalRequest.url?.includes('/auth/login');
         const isUserMeRequest = originalRequest.url?.includes('/users/profile/me');
 
-        if (error.response?.status === 401 && !isLoginRequest && !isUserMeRequest && !originalRequest._retry) {
+        if (error.response?.status === 401 && !isLoginRequest && !originalRequest._retry) {
             if (originalRequest.url.includes('/auth/refresh')) {
                 return Promise.reject(error);
             }
 
             originalRequest._retry = true;
             const refreshToken = localStorage.getItem('refreshToken');
-            if (!refreshToken) {
+            if (!refreshToken && !isUserMeRequest) {
                 window.location.href = '/login';
                 return Promise.reject(error);
             }
