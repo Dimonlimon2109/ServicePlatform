@@ -112,7 +112,10 @@ export default function Catalog() {
             <Box display="flex" gap={2} mb={3} flexWrap="wrap" alignItems="center">
                 <Select
                     value={selectedCategory}
-                    onChange={(event) => setSelectedCategory(event.target.value)}
+                    onChange={(event) => {
+                        setPage(1);
+                        setSelectedCategory(event.target.value);
+                    }}
                     displayEmpty
                     sx={{ minWidth: 150 }}
                 >
@@ -128,7 +131,10 @@ export default function Catalog() {
                     <Typography>Цена</Typography>
                     <Slider
                         value={price}
-                        onChange={(_, newValue) => setPrice(newValue as number[])}
+                        onChange={(_, newValue) => {
+                            setPrice(newValue as number[])
+                            setPage(1);
+                        }}
                         valueLabelDisplay="auto"
                         min={0}
                         max={1000}
@@ -140,7 +146,10 @@ export default function Catalog() {
                     <Select
                         value={rating ?? ''}
                         onChange={(e) =>
-                            setRating(e.target.value === '' ? null : Number(e.target.value))
+                            {
+                                setRating(e.target.value === '' ? null : Number(e.target.value));
+                                setPage(1);
+                            }
                         }
                         displayEmpty
                     >
@@ -158,7 +167,10 @@ export default function Catalog() {
                     <input
                         type="text"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setPage(1);
+                        }}
                         placeholder="Введите название или описание"
                         style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
                     />

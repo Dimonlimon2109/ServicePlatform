@@ -211,6 +211,6 @@ export class ServicesController {
   @ApiParam({ name: 'id', description: 'ID услуги для удаления', type: 'string' })
   @ApiResponse({ status: 200, description: 'Услуга успешно удалена.' })
   remove(@Param('id') id: string, @Request() req) {
-    return this.servicesService.remove(id, req.user.id);
+    return this.servicesService.remove(id, req.user.id, req.user.userType);
   }
 }

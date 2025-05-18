@@ -12,6 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import BookingsPage from './pages/BookingsPage.tsx';
 import ServiceBookingsPage from './pages/ServiceBookingsPage.tsx';
 import ChatPage from './pages/ChatPage.tsx';
+import UsersPage from "./pages/UsersPage.tsx";
 
 function App() {
     return (
@@ -27,6 +28,7 @@ function App() {
                     <Route path="services/my" element={<UserServicesPage/>} />
                     <Route path="profile" element={<ProfilePage/>}/>
                     <Route path="users/:id" element={<ProfilePage />} />
+                    <Route path="/users" element={<UsersPage />} />
                     <Route path="/bookings" element={<BookingsPage />} />
                     <Route path="/services/:id/bookings" element={<ServiceBookingsPage />} />
                     <Route path="/chat/:id" element={<ChatPage />} />

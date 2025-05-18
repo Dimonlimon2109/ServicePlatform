@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axiosInstance.ts';
-import {toast} from "react-toastify";
+import { toast } from 'react-toastify';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -21,49 +21,55 @@ const Login = () => {
         } catch (error: any) {
             if (error.response?.status === 401) {
                 toast.error('Ваш аккаунт заблокирован. Обратитесь в поддержку.');
-            }
-            else if (error.response?.status === 404) {
+            } else if (error.response?.status === 404) {
                 toast.error('Пользователь не найден');
-            }
-            else if (error.response?.status === 400) {
+            } else if (error.response?.status === 400) {
                 toast.error('Неверный пароль');
-            }
-            else {
+            } else {
                 toast.error('Ошибка авторизации. Попробуйте снова.');
             }
         }
     };
 
     return (
-        <Box p={4}>
-            <Typography variant="h4" gutterBottom>Войти в аккаунт</Typography>
+        <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            height="100vh"
+        >
+            <Box width="30%" minWidth={300}>
+                <Typography variant="h4" gutterBottom textAlign="center">
+                    Войти в аккаунт
+                </Typography>
 
-            <TextField
-                label="Email"
-                variant="outlined"
-                fullWidth
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                margin="normal"
-            />
-            <TextField
-                label="Пароль"
-                type="password"
-                variant="outlined"
-                fullWidth
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                margin="normal"
-            />
-            <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                onClick={handleLogin}
-                sx={{ mt: 2 }}
-            >
-                Войти
-            </Button>
+                <TextField
+                    label="Email"
+                    variant="outlined"
+                    fullWidth
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    margin="normal"
+                />
+                <TextField
+                    label="Пароль"
+                    type="password"
+                    variant="outlined"
+                    fullWidth
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    margin="normal"
+                />
+                <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={handleLogin}
+                    sx={{ mt: 2 }}
+                >
+                    Войти
+                </Button>
+            </Box>
         </Box>
     );
 };

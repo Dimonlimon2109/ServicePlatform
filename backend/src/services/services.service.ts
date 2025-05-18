@@ -187,10 +187,11 @@ export class ServicesService {
   }
 
 
-  async remove(id: string, userId: string) {
+  async remove(id: string, userId: string, userType:string) {
     const service = await this.findOne(id);
-
-    if (service.providerId !== userId) {
+    console.log(service);
+    console.log(userId);
+    if (service.providerId !== userId && userType !== 'ADMIN') {
       throw new ForbiddenException('You do not have permission to delete this service.');
     }
 

@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {Injectable, NotFoundException, ConflictException, UnauthorizedException} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
+
+interface UserFilters {
+  email?: string;
+  isBlocked?: boolean;
+}
 
 @Injectable()
 export class UsersService {
@@ -37,20 +42,52 @@ export class UsersService {
     });
   }
 
-  async findAll() {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        phone: true,
-        userType: true,
-        profilePhotoPath: true,
-        isBlocked: true,
-        createdAt: true,
+  async findAll(page: number, limit: number, filters: UserFilters) {
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (filters.email) {
+      where.email = {
+        contains: filters.email,
+        mode: 'insensitive',
+      };
+    }
+
+    if (filters.isBlocked !== undefined) {
+      where.isBlocked = filters.isBlocked;
+    }
+
+    const [users, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        skip,
+        take: limit,
+        where,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          userType: true,
+          profilePhotoPath: true,
+          isBlocked: true,
+          createdAt: true,
+        },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
-    });
+    };
   }
 
   async findOne(id: string) {
@@ -76,19 +113,14 @@ export class UsersService {
     return user;
   }
 
-  async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
-      where: { email },
-    });
-  }
-
   async update(id: string, data: {
     firstName?: string;
     lastName?: string;
     phone?: string;
     profilePhotoPath?: string;
   }) {
-    await this.findOne(id);
+   const user =  await this.findOne(id);
+
 
     return this.prisma.user.update({
       where: { id },
@@ -104,6 +136,39 @@ export class UsersService {
         createdAt: true,
       },
     });
+  }
+
+  async changePassword(
+      id: string,
+      currentPassword: string,
+      newPassword: string,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { password: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Неправильный текущий пароль');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id },
+      data: { password: hashedNewPassword },
+    });
+
+    return true;
   }
 
   async remove(id: string) {

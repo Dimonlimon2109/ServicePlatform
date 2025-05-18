@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-    Box, Typography, Button, CircularProgress, Card, CardMedia, Stack, Divider, Avatar, Rating
+    Box, Typography, Button, CircularProgress, Card, CardMedia, Stack, Divider, Avatar, Rating,
+    Snackbar, Alert
 } from '@mui/material';
 import axios from '../api/axiosInstance';
 import BookingDialog from "./BookingDialog.tsx";
 import {useAuth} from "../hooks/useAuth.ts";
+import {toast} from "react-toastify";
 
 export default function ServiceDetails() {
     const { id } = useParams();
@@ -13,9 +15,10 @@ export default function ServiceDetails() {
     const [service, setService] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
     const [reviews, setReviews] = useState<any[]>([]);
-
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [bookingOpen, setBookingOpen] = useState(false);
-    const { user } = useAuth(); // получить userId из контекста/хука
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchService = async () => {
@@ -33,6 +36,19 @@ export default function ServiceDetails() {
         fetchService();
     }, [id]);
 
+    const handleDeleteService = async () => {
+        if (!window.confirm('Вы уверены, что хотите удалить услугу?')) return;
+
+        try {
+            await axios.delete(`/services/${id}`);
+            toast.success('Услуга успешно удалена');
+            setTimeout(() => navigate('/catalog'), 2000);
+        } catch (error) {
+            toast.error('Ошибка при удалении услуги');
+            console.error('Ошибка при удалении услуги:', error);
+        }
+    };
+
     const handleDeleteReview = async (reviewId: string) => {
         if (!window.confirm('Вы уверены, что хотите удалить отзыв?')) return;
 
@@ -40,10 +56,11 @@ export default function ServiceDetails() {
             await axios.delete(`/reviews/${reviewId}`);
             setReviews((prev) => prev.filter((r) => r.id !== reviewId));
         } catch (error) {
-            console.error('Ошибка при удалении отзыва:', error);
+            console.error(`Ошибка при удалении отзыва: ${error}`);
         }
     };
 
+    const isCommonUser = user && service && user.id !== service.providerId;
 
     if (loading) {
         return (
@@ -63,6 +80,14 @@ export default function ServiceDetails() {
 
     return (
         <Box p={4}>
+            <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
+                <Alert severity="error">{error}</Alert>
+            </Snackbar>
+
+            <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess('')}>
+                <Alert severity="success">{success}</Alert>
+            </Snackbar>
+
             <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={4}>
                 <Card sx={{ width: { xs: '100%', md: 400 }, boxShadow: 3 }}>
                     {service.photoPath && (
@@ -93,29 +118,47 @@ export default function ServiceDetails() {
                             <Box
                                 component="span"
                                 sx={{ cursor: 'pointer', color: 'primary.main', textDecoration: 'underline' }}
-                                onClick={() => navigate(`/users/${service.providerId}`)}
+                                onClick={() => {
+                                    if(user.id === service.providerId)
+                                        navigate(`/profile`);
+                                    else
+                                        navigate(`/users/${service.providerId}`);
+                                }}
                             >
                                 {service.provider?.firstName + ' ' + service.provider?.lastName}
                             </Box>
                         </Typography>
                     </Stack>
-
                     <Box mt={3} display="flex" gap={2} flexWrap="wrap">
-                        <Button
-                            variant="contained"
-                            color="success"
-                            onClick={() => setBookingOpen(true)}
-                        >
-                            Забронировать
-                        </Button>
+                        {isCommonUser && (
+                            <>
+                                <Button
+                                    variant="contained"
+                                    color="success"
+                                    onClick={() => setBookingOpen(true)}
+                                >
+                                    Забронировать
+                                </Button>
 
-                        <Button
-                            variant="outlined"
-                            color="primary"
-                            onClick={() => navigate(`/chat/${service.providerId}`)}
-                        >
-                            Написать провайдеру
-                        </Button>
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={() => navigate(`/chat/${service.providerId}`)}
+                                >
+                                    Написать провайдеру
+                                </Button>
+                            </>
+                        )}
+
+                        {user?.userType === 'ADMIN' || !isCommonUser && (
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={handleDeleteService}
+                            >
+                                Удалить услугу
+                            </Button>
+                        )}
                     </Box>
                 </Box>
             </Box>

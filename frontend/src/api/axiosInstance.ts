@@ -22,7 +22,7 @@ instance.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
-
+        console.log(originalRequest.url);
         const isLoginRequest = originalRequest.url?.includes('/auth/login');
         const isUserMeRequest = originalRequest.url?.includes('/users/profile/me');
 
@@ -34,6 +34,8 @@ instance.interceptors.response.use(
             originalRequest._retry = true;
             const refreshToken = localStorage.getItem('refreshToken');
             if (!refreshToken && !isUserMeRequest) {
+                console.log("qqqq");
+                console.log(originalRequest.url);
                 window.location.href = '/login';
                 return Promise.reject(error);
             }
@@ -54,7 +56,12 @@ instance.interceptors.response.use(
             } catch (refreshError) {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
-                window.location.href = '/login';
+                const currentPath = window.location.pathname;
+                const isServiceDetailPage = /^\/services\/[^/]+$/.test(currentPath);
+
+                if (!isServiceDetailPage) {
+                    window.location.href = '/login';
+                }
                 return Promise.reject(refreshError);
             }
         }
