@@ -36,4 +36,7 @@ export class UploadService {
   getImagePath(file: Express.Multer.File): string {
     return file?.filename ? `/uploads/${file.filename}` : null;
   }
+  getDefaultImagePath(): string {
+    return '/uploads/default/default-image.png';
+  }
 }

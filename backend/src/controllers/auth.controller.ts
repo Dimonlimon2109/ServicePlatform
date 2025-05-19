@@ -63,10 +63,16 @@ export class AuthController {
 @ApiResponse({ status: 409, description: 'Email уже используется' })
 async register(
   @Body() registerDto: RegisterDto,
-  @UploadedFile() avatar: Express.Multer.File,
+  @UploadedFile() avatar?: Express.Multer.File,
 ): Promise<Tokens> {
-  const imagePath:string = this.uploadService.getImagePath(avatar);
-  return this.authService.register(registerDto, imagePath);
+    let imagePath: string;
+    if (avatar) {
+      imagePath = this.uploadService.getImagePath(avatar);
+    } else {
+      imagePath = this.uploadService.getDefaultImagePath();
+    }
+    console.log(imagePath);
+    return this.authService.register(registerDto, imagePath);
 }
 
   @ApiOperation({ summary: 'Аутентификация пользователя' })
