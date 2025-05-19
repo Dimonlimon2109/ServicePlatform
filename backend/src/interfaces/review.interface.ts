@@ -6,6 +6,6 @@ export interface Review {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
-  service?: any; // You can define a more specific type for the service
-  user?: any; // You can define a more specific type for the user
-} 
+  service?: any;
+  user?: any;
+}

@@ -1,6 +1,12 @@
-import { IsString, IsNotEmpty, IsNumber, IsInt, Min } from 'class-validator';
+import {
+    IsString,
+    IsNotEmpty,
+    IsNumber,
+    IsInt,
+    Min,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import {Transform} from "class-transformer";
+import { Transform } from 'class-transformer';
 
 export class CreateServiceDto {
     @ApiProperty({ example: 'Маникюр', description: 'Название услуги' })
@@ -14,8 +20,9 @@ export class CreateServiceDto {
     description: string;
 
     @ApiProperty({ example: 35.50, description: 'Цена услуги' })
-    @Transform(({value}) => parseFloat(value))
-    @IsNumber()
+    @Transform(({ value }) => parseFloat(value))
+    @IsNumber({ allowNaN: false, allowInfinity: false }, { message: 'Цена должна быть числом' })
+    @Min(0, { message: 'Цена не может быть отрицательной' })
     price: number;
 
     @ApiProperty({ example: 'Красота', description: 'Категория услуги' })
@@ -25,7 +32,7 @@ export class CreateServiceDto {
 
     @ApiProperty({ example: 60, description: 'Продолжительность в минутах' })
     @Transform(({ value }) => parseInt(value, 10))
-    @IsInt()
-    @Min(1)
+    @IsInt({ message: 'Продолжительность должна быть целым числом' })
+    @Min(1, { message: 'Продолжительность должна быть минимум 1 минута' })
     duration: number;
 }
