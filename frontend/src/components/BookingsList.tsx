@@ -4,12 +4,15 @@ import {
     TextField, Pagination, Button,
     DialogContent,
     Dialog,
-    DialogTitle, DialogActions, Rating
+    DialogTitle, DialogActions, Rating,
+    Stack,
+    Avatar, Chip, CardMedia
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import axios from '../api/axiosInstance.ts';
 import dayjs from 'dayjs';
 import {toast} from "react-toastify";
+import {CalendarToday, Cancel, CheckCircle, Payment, RateReview, Star } from '@mui/icons-material';
 
 const statusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', "PAID"];
 const statusTranslations: Record<string, string> = {
@@ -116,41 +119,68 @@ console.log(reviewRating);
             alert('Ошибка при обработке запроса на оплату!');
         }
     };
-
     return (
-        <>
-            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-                <FormControl sx={{ minWidth: 150 }}>
-                    <InputLabel>Статус</InputLabel>
-                    <Select
-                        value={status}
-                        label="Статус"
-                        onChange={(e) => setStatus(e.target.value)}
-                    >
-                        <MenuItem value="">Все</MenuItem>
-                        {statusOptions.map((s) => (
-                            <MenuItem key={s} value={s}>{statusTranslations[s]}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+        <Box sx={{ p: 3, maxWidth: 1600, margin: '0 auto' }}>
+            {/* Фильтры */}
+            <Card sx={{ mb: 3, p: 2, boxShadow: 3, borderRadius: 4 }}>
+                <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+                    <FormControl sx={{ minWidth: 200, flex: 1 }}>
+                        <InputLabel>Статус</InputLabel>
+                        <Select
+                            value={status}
+                            label="Статус"
+                            onChange={(e) => setStatus(e.target.value)}
+                            sx={{ borderRadius: 3 }}
+                        >
+                            <MenuItem value="">Все статусы</MenuItem>
+                            {statusOptions.map((s) => (
+                                <MenuItem key={s} value={s}>
+                                    <Chip
+                                        label={statusTranslations[s]}
+                                        size="small"
+                                        sx={{
+                                            mr: 1,
+                                            bgcolor: statusColorMap[s]?.light,
+                                            color: statusColorMap[s]?.dark
+                                        }}
+                                    />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
 
-                <TextField
-                    label="С даты"
-                    type="date"
-                    InputLabelProps={{ shrink: true }}
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                />
-                <TextField
-                    label="По дату"
-                    type="date"
-                    InputLabelProps={{ shrink: true }}
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                />
-            </Box>
+                    <TextField
+                        label="С даты"
+                        type="date"
+                        InputLabelProps={{ shrink: true }}
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <CalendarToday sx={{ color: 'action.active', mr: 1 }} />
+                            )
+                        }}
+                        sx={{ flex: 1 }}
+                    />
 
-            <Grid container spacing={2}>
+                    <TextField
+                        label="По дату"
+                        type="date"
+                        InputLabelProps={{ shrink: true }}
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <CalendarToday sx={{ color: 'action.active', mr: 1 }} />
+                            )
+                        }}
+                        sx={{ flex: 1 }}
+                    />
+                </Stack>
+            </Card>
+
+            {/* Список бронирований */}
+            <Grid container spacing={3}>
                 {bookings.map((booking: any) => {
                     const now = dayjs();
                     const bookingDate = dayjs(booking.date);
@@ -161,73 +191,138 @@ console.log(reviewRating);
                     const canComplete = now.isAfter(endOfService);
 
                     return (
-                        <Grid item xs={12} md={6} key={booking.id}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6">{booking.service?.title}</Typography>
-                                    <Typography>Дата: {bookingDate.format('DD.MM.YYYY HH:mm')}</Typography>
-                                    <Typography>Статус: {statusTranslations[booking.status]}</Typography>
+                        <Grid item xs={12} md={6} lg={4} key={booking.id}>
+                            <Card sx={{
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                boxShadow: 3,
+                                borderRadius: 4,
+                                overflow: 'hidden'
+                            }}>
+                                {/* Изображение сервиса */}
+                                {booking.service?.photoPath && (
+                                    <CardMedia
+                                        component="img"
+                                        height="200"
+                                        image={booking.service.photoPath}
+                                        alt={booking.service.title}
+                                        sx={{ objectFit: 'cover' }}
+                                    />
+                                )}
 
-                                    <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                <CardContent sx={{ flexGrow: 1 }}>
+                                    <Stack spacing={1.5}>
+                                        <Typography variant="h6" fontWeight={600}>
+                                            {booking.service?.title}
+                                        </Typography>
+
+                                        <Chip
+                                            label={statusTranslations[booking.status]}
+                                            color={statusColorMap[booking.status]?.color}
+                                            variant="filled"
+                                            sx={{ alignSelf: 'flex-start' }}
+                                        />
+
+                                        <Stack direction="row" spacing={2} alignItems="center">
+                                            <Avatar sx={{ bgcolor: 'primary.main' }}>
+                                                <CalendarToday fontSize="small" />
+                                            </Avatar>
+                                            <Typography>
+                                                {bookingDate.format('DD MMM YYYY, HH:mm')}
+                                            </Typography>
+                                        </Stack>
+
+                                        <Stack direction="row" spacing={2} alignItems="center">
+                                            <Avatar sx={{ bgcolor: 'secondary.main' }}>
+                                                <Star fontSize="small" />
+                                            </Avatar>
+                                            <Typography>
+                                                Длительность: {durationMinutes} минут
+                                            </Typography>
+                                        </Stack>
+                                    </Stack>
+                                </CardContent>
+
+                                <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+                                    <Stack spacing={1}>
                                         <Button
+                                            fullWidth
                                             variant="outlined"
                                             color="error"
-                                            //disabled={!canCancel || booking.status === 'CANCELLED' || booking.status === 'COMPLETED'}
+                                            startIcon={<Cancel />}
                                             onClick={() => handleCancel(booking.id)}
+                                            disabled={!canCancel || ['CANCELLED', 'COMPLETED'].includes(booking.status)}
                                         >
-                                            Отклонить
+                                            Отменить бронь
                                         </Button>
+
                                         <Button
-                                            variant="contained"
-                                            color="success"
-                                            //disabled={canComplete || booking.status === 'CANCELLED' || booking.status !== 'CONFIRMED' || booking.status === 'COMPLETED'}
-                                            onClick={() => handleComplete(booking.id)}
-                                        >
-                                            Подтвердить выполнение
-                                        </Button>
-                                        <Button
+                                            fullWidth
                                             variant="contained"
                                             color="primary"
-                                            disabled={booking.status !== 'COMPLETED'}
+                                            startIcon={<Payment />}
                                             onClick={() => handlePayment(booking.id, booking.service.price)}
+                                            disabled={booking.status !== 'COMPLETED'}
                                         >
-                                            Оплатить
+                                            Оплатить ({booking.service?.price} BYN)
                                         </Button>
+
                                         <Button
+                                            fullWidth
                                             variant="outlined"
                                             color="secondary"
-                                            // disabled={booking.status !== 'COMPLETED' || booking.status !== 'PAID'}
+                                            startIcon={<RateReview />}
                                             onClick={() => handleOpenReviewModal(booking.service?.id)}
+                                            disabled={!['COMPLETED', 'PAID'].includes(booking.status)}
                                         >
                                             Оставить отзыв
                                         </Button>
-                                    </Box>
-                                </CardContent>
+                                    </Stack>
+                                </Box>
                             </Card>
                         </Grid>
                     );
                 })}
             </Grid>
 
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            {/* Пагинация */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
                 <Pagination
                     count={totalPages}
                     page={page}
                     onChange={(e, val) => setPage(val)}
+                    color="primary"
+                    shape="rounded"
+                    size="large"
                 />
             </Box>
-            <Dialog open={isReviewOpen} onClose={handleCloseReviewModal} fullWidth maxWidth="sm">
-                <DialogTitle>Оставить отзыв</DialogTitle>
-                <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <Typography>Ваша оценка:</Typography>
-                        <Rating
-                            name="rating"
-                            value={reviewRating}
-                            onChange={(event, newValue) => {
-                                setReviewRating(newValue);
-                            }}
-                        />
+
+            {/* Диалог отзыва */}
+            <Dialog
+                open={isReviewOpen}
+                onClose={handleCloseReviewModal}
+                fullWidth
+                maxWidth="sm"
+                PaperProps={{ sx: { borderRadius: 4 } }}
+            >
+                <DialogTitle sx={{ bgcolor: 'primary.main', color: 'white' }}>
+                    Оставить отзыв
+                </DialogTitle>
+
+                <DialogContent sx={{ p: 3 }}>
+                    <Stack spacing={3}>
+                        <Box textAlign="center">
+                            <Rating
+                                name="rating"
+                                value={reviewRating}
+                                onChange={(_, newValue) => setReviewRating(newValue)}
+                                size="large"
+                                icon={<Star sx={{ color: 'gold', fontSize: 40 }} />}
+                                emptyIcon={<Star sx={{ color: 'action.disabled', fontSize: 40 }} />}
+                            />
+                        </Box>
+
                         <TextField
                             multiline
                             fullWidth
@@ -235,18 +330,44 @@ console.log(reviewRating);
                             label="Ваш комментарий"
                             value={reviewText}
                             onChange={(e) => setReviewText(e.target.value)}
+                            variant="outlined"
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2
+                                }
+                            }}
                         />
-                    </Box>
+                    </Stack>
                 </DialogContent>
 
-                <DialogActions>
-                    <Button onClick={handleCloseReviewModal}>Отмена</Button>
-                    <Button onClick={handleSubmitReview} variant="contained">Отправить</Button>
+                <DialogActions sx={{ p: 3 }}>
+                    <Button
+                        onClick={handleCloseReviewModal}
+                        sx={{ borderRadius: 2, px: 3 }}
+                    >
+                        Отмена
+                    </Button>
+                    <Button
+                        onClick={handleSubmitReview}
+                        variant="contained"
+                        color="primary"
+                        sx={{ borderRadius: 2, px: 3 }}
+                    >
+                        Опубликовать отзыв
+                    </Button>
                 </DialogActions>
             </Dialog>
-
-        </>
+        </Box>
     );
 };
+
+const statusColorMap = {
+    PENDING: { color: 'warning', light: '#fff3e0', dark: '#ef6c00' },
+    CONFIRMED: { color: 'info', light: '#e3f2fd', dark: '#1976d2' },
+    COMPLETED: { color: 'success', light: '#e8f5e9', dark: '#2e7d32' },
+    CANCELLED: { color: 'error', light: '#ffebee', dark: '#d32f2f' },
+    PAID: { color: 'secondary', light: '#f3e5f5', dark: '#9c27b0' }
+};
+
 
 export default BookingsList;

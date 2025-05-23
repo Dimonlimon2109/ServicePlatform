@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Button, Pagination } from '@mui/material';
+import { Box, Typography, Grid, Button, Pagination, Stack } from '@mui/material';
 import axios from '../api/axiosInstance';
 import ServiceCard from '../components/ServiceCard';
 import { useNavigate } from 'react-router-dom';
@@ -66,60 +66,88 @@ const UserServices = () => {
     }, [page]);
 
     return (
-        <Box p={4}>
-            <Typography variant="h4" gutterBottom>Мои услуги</Typography>
-
-            <Box display="flex" justifyContent="flex-end" mb={2}>
-                <Button variant="contained" color="success" onClick={() => navigate('/services/create')}>
+        <Box p={4} maxWidth={1200} margin="0 auto">
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+                <Typography variant="h4">Мои услуги</Typography>
+                <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => navigate('/services/create')}
+                    sx={{ borderRadius: 2, py: 1.5 }}
+                >
                     Добавить услугу
                 </Button>
             </Box>
 
             {services.length === 0 ? (
-                <Typography>У вас пока нет добавленных услуг.</Typography>
+                <Typography variant="body1" color="text.secondary">
+                    У вас пока нет добавленных услуг.
+                </Typography>
             ) : (
                 <>
                     <Grid container spacing={3}>
                         {services.map((service) => (
                             <Grid item xs={12} sm={6} md={4} key={service.id}>
                                 <ServiceCard service={service} />
-                                <Box display="flex" justifyContent="space-between" mt={1}>
+
+                                {/* Контейнер для кнопок */}
+                                <Stack spacing={1} mt={1.5}>
+                                    {/* Группа основных действий */}
+                                    <Box display="flex" gap={1}>
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => handleEdit(service.id)}
+                                            sx={{ flex: 1 }}
+                                        >
+                                            Редактировать
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            color="error"
+                                            onClick={() => handleDelete(service.id)}
+                                            sx={{
+                                                minWidth: 48,
+                                                px: 2,
+                                                borderWidth: 2,
+                                                '&:hover': { borderWidth: 2 }
+                                            }}
+                                        >
+                                            Удалить
+                                        </Button>
+                                    </Box>
+
+                                    {/* Кнопка истории бронирований */}
                                     <Button
                                         fullWidth
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => handleEdit(service.id)}
+                                        variant="outlined"
+                                        color="secondary"
+                                        onClick={() => navigate(`/services/${service.id}/bookings`)}
                                     >
-                                        Редактировать
+                                        История бронирований
                                     </Button>
-                                    <Button color="error" onClick={() => handleDelete(service.id)}>
-                                        Удалить
-                                    </Button>
-                                </Box>
-                                <Button
-                                    fullWidth
-                                    variant="outlined"
-                                    sx={{ mt: 1 }}
-                                    onClick={() => navigate(`/services/${service.id}/bookings`)}
-                                >
-                                    История бронирований
-                                </Button>
+                                </Stack>
                             </Grid>
                         ))}
                     </Grid>
 
-                    <Box mt={4} display="flex" justifyContent="center">
-                        <Pagination
-                            count={totalPages}
-                            page={page}
-                            onChange={handlePageChange}
-                            color="primary"
-                        />
-                    </Box>
+                    {/* Пагинация */}
+                    {totalPages > 1 && (
+                        <Box mt={4} display="flex" justifyContent="center">
+                            <Pagination
+                                count={totalPages}
+                                page={page}
+                                onChange={handlePageChange}
+                                color="primary"
+                                shape="rounded"
+                                size="large"
+                            />
+                        </Box>
+                    )}
                 </>
             )}
         </Box>
     );
 };
-
 export default UserServices;

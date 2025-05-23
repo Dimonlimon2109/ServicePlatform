@@ -13,6 +13,7 @@ import BookingsPage from './pages/BookingsPage.tsx';
 import ServiceBookingsPage from './pages/ServiceBookingsPage.tsx';
 import ChatPage from './pages/ChatPage.tsx';
 import UsersPage from "./pages/UsersPage.tsx";
+import FavoritesPage from "./pages/FavoritesPage.tsx";
 
 function App() {
     return (
@@ -32,6 +33,7 @@ function App() {
                     <Route path="/bookings" element={<BookingsPage />} />
                     <Route path="/services/:id/bookings" element={<ServiceBookingsPage />} />
                     <Route path="/chat/:id" element={<ChatPage />} />
+                    <Route path="/favorites" element={<FavoritesPage />} />
                 </Routes>
             <ToastContainer position="top-right" autoClose={3000}/>
         </BrowserRouter>

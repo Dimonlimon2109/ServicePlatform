@@ -7,8 +7,8 @@ export class CreateMessageDto {
     type: String,
     example: 'Привет, как дела?',
   })
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'Содержание сообщения не должно быть пустым' })
+  @IsString({ message: 'Содержание сообщения должно быть строкой' })
   content: string;
 
   @ApiProperty({
@@ -16,7 +16,7 @@ export class CreateMessageDto {
     type: String,
     example: 'b6a724eb-3f49-4e61-b92b-01234bcdbcd1',
   })
-  @IsNotEmpty()
-  @IsUUID()
+  @IsNotEmpty({ message: 'ID получателя обязателен' })
+  @IsUUID(undefined, { message: 'ID получателя должен быть корректным UUID' })
   receiverId: string;
 }

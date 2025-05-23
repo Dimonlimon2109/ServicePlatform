@@ -7,8 +7,8 @@ export class CreateReviewDto {
     type: String,
     example: 'b6a724eb-3f49-4e61-b92b-01234bcdbcd1',
   })
-  @IsNotEmpty()
-  @IsUUID()  // Проверка, что serviceId является UUID
+  @IsNotEmpty({ message: 'ID сервиса обязателен' })
+  @IsUUID(undefined, { message: 'ID сервиса должен быть корректным UUID' })
   serviceId: string;
 
   @ApiProperty({
@@ -18,10 +18,10 @@ export class CreateReviewDto {
     minimum: 1,
     maximum: 5,
   })
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  @Max(5)
+  @IsNotEmpty({ message: 'Рейтинг обязателен' })
+  @IsNumber({}, { message: 'Рейтинг должен быть числом' })
+  @Min(1, { message: 'Рейтинг не может быть меньше 1' })
+  @Max(5, { message: 'Рейтинг не может быть больше 5' })
   rating: number;
 
   @ApiProperty({
@@ -29,7 +29,7 @@ export class CreateReviewDto {
     type: String,
     example: 'Отличный сервис, рекомендую!',
   })
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: 'Комментарий не должен быть пустым' })
+  @IsString({ message: 'Комментарий должен быть строкой' })
   comment: string;
 }

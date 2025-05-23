@@ -7,9 +7,12 @@ import {
     Pagination,
     Typography,
     Grid,
+    InputAdornment,
+    Card, TextField,
 } from '@mui/material';
 import axios from '../api/axiosInstance';
 import ServiceCard from './ServiceCard';
+import {Search, Star} from '@mui/icons-material';
 
 type Service = {
     id: number;
@@ -30,7 +33,7 @@ export default function Catalog() {
     const [services, setServices] = useState<Service[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [price, setPrice] = useState<number[]>([0, 1000]);
+    const [price, setPrice] = useState<number[]>([0, 100000]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
@@ -104,98 +107,155 @@ export default function Catalog() {
     };
 
     return (
-        <Box p={4}>
-            <Typography variant="h4" mb={2}>
+        <Box sx={{
+            p: 4,
+            maxWidth: 1400,
+            margin: '0 auto',
+            backgroundColor: 'background.default'
+        }}>
+            <Typography variant="h3" component="h1" sx={{
+                mb: 4,
+                fontWeight: 700,
+                color: 'text.primary',
+                textAlign: 'center'
+            }}>
                 Каталог услуг
             </Typography>
 
-            <Box display="flex" gap={2} mb={3} flexWrap="wrap" alignItems="center">
-                <Select
-                    value={selectedCategory}
-                    onChange={(event) => {
-                        setPage(1);
-                        setSelectedCategory(event.target.value);
-                    }}
-                    displayEmpty
-                    sx={{ minWidth: 150 }}
-                >
-                    <MenuItem value="">Все категории</MenuItem>
-                    {categories.map((cat) => (
-                        <MenuItem key={cat.id} value={cat.name}>
-                            {cat.name}
-                        </MenuItem>
-                    ))}
-                </Select>
+            {/* Фильтры */}
+            <Card sx={{
+                mb: 4,
+                p: 3,
+                boxShadow: 3,
+                borderRadius: 4
+            }}>
+                <Box display="flex" gap={3} flexWrap="wrap">
+                    <Box flex="1 1 300px">
+                        <TextField
+                            fullWidth
+                            variant="outlined"
+                            placeholder="Поиск услуг..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setPage(1);
+                            }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Search color="primary" />
+                                    </InputAdornment>
+                                ),
+                                sx: { borderRadius: 3 }
+                            }}
+                        />
+                    </Box>
 
-                <Box width={200}>
-                    <Typography>Цена</Typography>
-                    <Slider
-                        value={price}
-                        onChange={(_, newValue) => {
-                            setPrice(newValue as number[])
-                            setPage(1);
-                        }}
-                        valueLabelDisplay="auto"
-                        min={0}
-                        max={1000}
-                    />
-                </Box>
+                    <Box flex="1 1 200px">
+                        <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                            Категория
+                        </Typography>
+                        <Select
+                            fullWidth
+                            value={selectedCategory}
+                            onChange={(e) => {
+                                setPage(1);
+                                setSelectedCategory(e.target.value);
+                            }}
+                            variant="outlined"
+                            sx={{ borderRadius: 3 }}
+                        >
+                            <MenuItem value="">Все категории</MenuItem>
+                            {categories.map((cat) => (
+                                <MenuItem key={cat.id} value={cat.name}>
+                                    {cat.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </Box>
 
-                <Box width={150}>
-                    <Typography>Рейтинг</Typography>
-                    <Select
-                        value={rating ?? ''}
-                        onChange={(e) =>
-                            {
+                    <Box flex="1 1 240px">
+                        <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                            Ценовой диапазон
+                        </Typography>
+                        <Slider
+                            value={price}
+                            onChange={(_, newValue) => {
+                                setPrice(newValue as number[])
+                                setPage(1);
+                            }}
+                            valueLabelDisplay="auto"
+                            valueLabelFormat={(v) => `${v} BYN`}
+                            min={0}
+                            max={1000}
+                            sx={{ color: 'primary.main' }}
+                        />
+                    </Box>
+
+                    <Box flex="1 1 200px">
+                        <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                            Минимальный рейтинг
+                        </Typography>
+                        <Select
+                            fullWidth
+                            value={rating ?? ''}
+                            onChange={(e) => {
                                 setRating(e.target.value === '' ? null : Number(e.target.value));
                                 setPage(1);
-                            }
-                        }
-                        displayEmpty
-                    >
-                        <MenuItem value="">Любой</MenuItem>
-                        {[5, 4, 3, 2, 1].map((r) => (
-                            <MenuItem key={r} value={r}>
-                                {r}+ звёзд
+                            }}
+                            variant="outlined"
+                            sx={{ borderRadius: 3 }}
+                        >
+                            <MenuItem value="">
+                                <Star sx={{ color: 'gold', mr: 1 }} />
+                                Любой
                             </MenuItem>
-                        ))}
-                    </Select>
+                            {[5, 4, 3, 2, 1].map((r) => (
+                                <MenuItem key={r} value={r}>
+                                    <Star sx={{ color: 'gold', mr: 1 }} />
+                                    {r}+
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </Box>
                 </Box>
+            </Card>
 
-                <Box flex={1} minWidth={250}>
-                    <Typography>Поиск</Typography>
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setPage(1);
-                        }}
-                        placeholder="Введите название или описание"
-                        style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-                    />
-                </Box>
-            </Box>
-
-            <Grid container spacing={2}>
+            {/* Список услуг */}
+            <Grid container spacing={4}>
                 {services.length > 0 ? (
                     services.map((service) => (
-                        <Grid item xs={12} sm={6} md={4} key={service.id}>
+                        <Grid item xs={12} key={service.id}>
                             <ServiceCard service={service} onDelete={handleDelete} />
                         </Grid>
                     ))
                 ) : (
-                    <Typography>Услуги не найдены</Typography>
+                    <Box width="100%" textAlign="center" py={6}>
+                        <Typography variant="h6" color="text.secondary">
+                            По вашему запросу ничего не найдено
+                        </Typography>
+                    </Box>
                 )}
             </Grid>
 
-            <Box mt={4} display="flex" justifyContent="center">
-                <Pagination
-                    count={totalPages}
-                    page={page}
-                    onChange={(_, value) => setPage(value)}
-                />
-            </Box>
+            {/* Пагинация */}
+            {totalPages > 1 && (
+                <Box mt={6} display="flex" justifyContent="center">
+                    <Pagination
+                        count={totalPages}
+                        page={page}
+                        onChange={(_, value) => setPage(value)}
+                        color="primary"
+                        shape="rounded"
+                        size="large"
+                        sx={{
+                            '& .MuiPaginationItem-root': {
+                                fontSize: '1.1rem'
+                            }
+                        }}
+                    />
+                </Box>
+            )}
         </Box>
     );
 }

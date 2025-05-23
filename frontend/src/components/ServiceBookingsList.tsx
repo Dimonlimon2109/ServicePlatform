@@ -8,10 +8,21 @@ import {
     TablePagination,
     Paper,
     Button,
+    Avatar,
+    Chip,
+    styled,
 } from '@mui/material';
+import {
+    Check as CheckIcon,
+    Clear as ClearIcon,
+    DoneAll as CompleteIcon,
+} from '@mui/icons-material';
+import {useNavigate} from "react-router-dom";
 
 type User = {
+    id: number;
     firstName: string;
+    profilePhotoPath?: string;
 };
 
 type Service = {
@@ -36,6 +47,18 @@ type Props = {
     onAction: (bookingId: number, action: 'confirm' | 'cancel' | 'complete') => void;
 };
 
+const StatusChip = styled(Chip)({
+    fontWeight: 500,
+    textTransform: 'uppercase',
+    fontSize: '0.75rem',
+});
+
+const SmallAvatar = styled(Avatar)({
+    width: 32,
+    height: 32,
+    marginRight: '12px',
+});
+
 const ServiceBookingsList = ({
                                  bookings,
                                  page,
@@ -45,6 +68,7 @@ const ServiceBookingsList = ({
                                  onRowsPerPageChange,
                                  onAction,
                              }: Props) => {
+    const navigate = useNavigate();
     const canConfirm = (status: string) => !['CONFIRMED', 'CANCELLED', 'COMPLETED'].includes(status);
 
     const canCancel = (status: string, date: string) => {
@@ -59,56 +83,112 @@ const ServiceBookingsList = ({
         return !['CANCELLED', 'PENDING', 'COMPLETED'].includes(status) && now >= endDate;
     };
 
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'CONFIRMED':
+                return 'primary';
+            case 'COMPLETED':
+                return 'success';
+            case 'CANCELLED':
+                return 'error';
+            default:
+                return 'default';
+        }
+    };
+
+    const formatDateTime = (dateString: string) => {
+        const date = new Date(dateString);
+        return (
+            <>
+                <div>{date.toLocaleDateString()}</div>
+                <div style={{ opacity: 0.75 }}>{date.toLocaleTimeString()}</div>
+            </>
+        );
+    };
+
     return (
-        <Paper>
+        <Paper sx={{ overflow: 'hidden' }}>
             <TableContainer>
-                <Table>
+                <Table size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell>ID</TableCell>
-                            <TableCell>Дата</TableCell>
-                            <TableCell>Статус</TableCell>
-                            <TableCell>Пользователь</TableCell>
-                            <TableCell>Действия</TableCell>
+                            <TableCell sx={{ width: 70 }}>ID</TableCell>
+                            <TableCell sx={{ minWidth: 140 }}>Дата и время</TableCell>
+                            <TableCell sx={{ minWidth: 120 }}>Статус</TableCell>
+                            <TableCell sx={{ minWidth: 180 }}>Пользователь</TableCell>
+                            <TableCell sx={{ minWidth: 200 }}>Действия</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {bookings.map((booking) => (
-                            <TableRow key={booking.id}>
-                                <TableCell>{booking.id}</TableCell>
-                                <TableCell>{new Date(booking.date).toLocaleString()}</TableCell>
-                                <TableCell>{booking.status}</TableCell>
-                                <TableCell>{booking.user?.firstName || '—'}</TableCell>
+                            <TableRow
+                                key={booking.id}
+                                hover
+                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                                <TableCell>#{booking.id}</TableCell>
+                                <TableCell>{formatDateTime(booking.date)}</TableCell>
                                 <TableCell>
-                                    {canConfirm(booking.status) && (
-                                        <Button
-                                            variant="outlined"
-                                            color="primary"
-                                            onClick={() => onAction(booking.id, 'confirm')}
-                                            sx={{ mr: 1, mb: 1 }}
+                                    <StatusChip
+                                        label={booking.status}
+                                        color={getStatusColor(booking.status)}
+                                        size="small"
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <SmallAvatar
+                                            src={booking.user?.profilePhotoPath}
+                                            alt={booking.user?.firstName}
                                         >
-                                            Подтвердить
-                                        </Button>
-                                    )}
-                                    {canCancel(booking.status, booking.date) && (
+                                            {booking.user?.firstName?.[0]}
+                                        </SmallAvatar>
                                         <Button
-                                            variant="outlined"
-                                            color="error"
-                                            onClick={() => onAction(booking.id, 'cancel')}
-                                            sx={{ mr: 1, mb: 1 }}
+                                            variant="text"
+                                            onClick={() => navigate(`/users/${booking.user.id}`)}
+                                            size="small"
+                                            sx={{ textTransform: 'none', padding: 0, minWidth: 0 }}
                                         >
-                                            Отклонить
+                                            {booking.user?.firstName || 'Неизвестный пользователь'}
                                         </Button>
-                                    )}
-                                    {canComplete(booking.status, booking.date, booking.service?.duration || 0) && (
-                                        <Button
-                                            variant="outlined"
-                                            color="success"
-                                            onClick={() => onAction(booking.id, 'complete')}
-                                        >
-                                            Завершить
-                                        </Button>
-                                    )}
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                        {/*{canConfirm(booking.status) && (*/}
+                                            <Button
+                                                variant="outlined"
+                                                color="primary"
+                                                startIcon={<CheckIcon />}
+                                                onClick={() => onAction(booking.id, 'confirm')}
+                                                size="small"
+                                            >
+                                                Подтвердить
+                                            </Button>
+                                        {/*)}*/}
+                                        {/*{canCancel(booking.status, booking.date) && (*/}
+                                            <Button
+                                                variant="outlined"
+                                                color="error"
+                                                startIcon={<ClearIcon />}
+                                                onClick={() => onAction(booking.id, 'cancel')}
+                                                size="small"
+                                            >
+                                                Отменить
+                                            </Button>
+                                        {/*)}*/}
+                                        {/*{canComplete(booking.status, booking.date, booking.service?.duration || 0) && (*/}
+                                            <Button
+                                                variant="outlined"
+                                                color="success"
+                                                startIcon={<CompleteIcon />}
+                                                onClick={() => onAction(booking.id, 'complete')}
+                                                size="small"
+                                            >
+                                                Завершить
+                                            </Button>
+                                        {/*)}*/}
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -127,6 +207,11 @@ const ServiceBookingsList = ({
                     const newRows = parseInt(event.target.value, 10);
                     onRowsPerPageChange(newRows);
                 }}
+                labelRowsPerPage="Строк на странице:"
+                labelDisplayedRows={({ from, to, count }) =>
+                    `${from}-${to} из ${count !== -1 ? count : `больше чем ${to}`}`
+                }
+                sx={{ borderTop: '1px solid rgba(224, 224, 224, 1)' }}
             />
         </Paper>
     );

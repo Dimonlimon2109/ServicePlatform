@@ -43,6 +43,9 @@ const Header = () => {
                             Бронирования
                         </Button>
                     )}
+                        <Button color="inherit" onClick={() => navigate('/favorites')}>
+                            Избранное
+                        </Button>
                 </Box>
                 <Box>
                     {!isAuthenticated ? (
