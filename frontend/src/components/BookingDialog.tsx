@@ -56,9 +56,10 @@ export default function BookingDialog({ open, onClose, serviceId, userId }: Book
                 <DateTimePicker
                     label="Дата и время"
                     value={date}
-                    onChange={setDate}
+                    onChange={(newValue) => setDate(newValue)}
                     minDateTime={dayjs()}
-                    renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
+                    slots={{ textField: TextField }}
+                    slotProps={{ textField: { fullWidth: true, margin: 'normal' } }}
                 />
             </DialogContent>
             <DialogActions>

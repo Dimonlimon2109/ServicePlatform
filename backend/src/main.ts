@@ -3,32 +3,29 @@ import { AppModule } from './modules/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
-import * as bodyParser from 'body-parser'; // импортируем body-parser
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-    app.use('/stripe/webhook', bodyParser.raw({ type: 'application/json' }));
 
-    // Остальные маршруты — обычный json
+  app.setGlobalPrefix('api');
+  app.use('/stripe/webhook', bodyParser.raw({ type: 'application/json' }));
     app.use(bodyParser.json());
 
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // Enable CORS
   app.enableCors({
-    origin: '*', // или конкретный адрес, например: 'http://localhost:3000'
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 });
 
-  // Enable validation
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     transform: true,
     forbidNonWhitelisted: true,
   }));
 
-  // Swagger documentation setup
   const config = new DocumentBuilder()
   .setTitle('Auth API')
   .setDescription('Документация по авторизации')
@@ -42,13 +39,13 @@ async function bootstrap() {
       description: 'Введите JWT токен, начиная с Bearer',
       in: 'header',
     },
-    'access-token', // имя схемы, будет использоваться в @ApiBearerAuth('access-token')
+    'access-token',
   )
   .build();
 
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('docs', app, document);
 
   // Start the server
   const port = process.env.PORT || 3000;

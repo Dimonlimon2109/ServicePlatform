@@ -27,7 +27,7 @@ export class ServicesService {
 
   async create(data: CreateServiceData) {
     const { title, description, price, category, providerId, photoPath, duration } = data;
-
+    console.log('Перед Insert в бд: ', photoPath);
     return this.prisma.service.create({
       data: {
         title,

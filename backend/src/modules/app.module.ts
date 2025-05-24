@@ -12,6 +12,7 @@ import {join} from 'path';
 import {StripeModule} from "./stripe.module";
 import {ChatModule} from "./chat.module";
 import {FavoritesModule} from "./favorites.module";
+import process from "node:process";
 
 @Module({
   imports: [
@@ -19,7 +20,9 @@ import {FavoritesModule} from "./favorites.module";
       isGlobal: true,
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
+      rootPath: __dirname.includes('dist')
+          ? join(__dirname, '..', 'uploads')
+          : join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
     PrismaModule,

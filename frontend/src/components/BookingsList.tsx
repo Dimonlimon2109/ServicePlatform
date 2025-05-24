@@ -185,13 +185,12 @@ console.log(reviewRating);
                     const now = dayjs();
                     const bookingDate = dayjs(booking.date);
                     const durationMinutes = booking.service?.duration || 0;
-                    const endOfService = bookingDate.add(durationMinutes, 'minute');
+                    // const endOfService = bookingDate.add(durationMinutes, 'minute');
 
                     const canCancel = now.isBefore(bookingDate);
-                    const canComplete = now.isAfter(endOfService);
 
                     return (
-                        <Grid item xs={12} md={6} lg={4} key={booking.id}>
+                        <Grid sx={{flex: '1 1 300px', maxWidth: '350px'}} key={booking.id}>
                             <Card sx={{
                                 height: '100%',
                                 display: 'flex',
@@ -204,10 +203,9 @@ console.log(reviewRating);
                                 {booking.service?.photoPath && (
                                     <CardMedia
                                         component="img"
-                                        height="200"
                                         image={booking.service.photoPath}
                                         alt={booking.service.title}
-                                        sx={{ objectFit: 'cover' }}
+                                        sx={{ objectFit: 'cover', width: '100%', aspectRatio: '1.66' }}
                                     />
                                 )}
 
@@ -291,7 +289,7 @@ console.log(reviewRating);
                 <Pagination
                     count={totalPages}
                     page={page}
-                    onChange={(e, val) => setPage(val)}
+                    onChange={(val) => setPage(val)}
                     color="primary"
                     shape="rounded"
                     size="large"

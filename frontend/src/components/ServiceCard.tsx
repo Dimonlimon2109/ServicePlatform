@@ -1,7 +1,6 @@
 // ServiceCard.tsx
 import {
     Card,
-    CardContent,
     CardMedia,
     Typography,
     Button,
@@ -12,7 +11,7 @@ import {
     styled
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { FavoriteBorder, Star } from '@mui/icons-material';
+import { Star } from '@mui/icons-material';
 
 const StyledCard = styled(Card)(({ theme }) => ({
     display: 'flex',
