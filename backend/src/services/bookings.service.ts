@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import {MailService} from "./mail.service";
 
 type CreateBookingData = {
   serviceId: string;
@@ -15,7 +16,8 @@ type UpdateBookingData = Partial<{
 
 @Injectable()
 export class BookingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService,
+              private mailService: MailService) {}
 
   async create(data: CreateBookingData) {
     return this.prisma.booking.create({
@@ -51,7 +53,7 @@ export class BookingsService {
     });
 
     if (!booking) {
-      throw new NotFoundException('Booking not found');
+      throw new NotFoundException('Бронирование не найдено');
     }
 
     return booking;
@@ -164,19 +166,34 @@ export class BookingsService {
 
 
   async update(id: string, data: UpdateBookingData) {
-    await this.findOne(id);
-
-    return this.prisma.booking.update({
+    const booking = await this.prisma.booking.update({
       where: { id },
       data: {
         date: data.date,
         status: data.status,
       },
       include: {
-        service: true,
+        service: {
+          include: {
+            provider: true,
+          },
+        },
         user: true,
       },
     });
+
+    // Отправляем уведомление, если статус изменился и он не равен 'PAID'
+    if (data.status && data.status !== 'PAID') {
+      await this.mailService.sendOrderStatusChangeEmail({
+        to: booking.user.email,
+        userName: booking.user.firstName,
+        serviceTitle: booking.service.title,
+        newStatus: data.status,
+        providerName: `${booking.service.provider.firstName} ${booking.service.provider.lastName}`,
+      });
+    }
+
+    return booking;
   }
 
   async remove(id: string) {
@@ -186,6 +203,6 @@ export class BookingsService {
       where: { id },
     });
 
-    return { message: 'Booking deleted successfully' };
+    return { message: 'Бронирование успешно удалено' };
   }
 }

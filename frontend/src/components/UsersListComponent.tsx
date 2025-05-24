@@ -128,7 +128,7 @@ const UsersListComponent: React.FC = () => {
                 <>
                     <Grid container spacing={2}>
                         {users.map(user => (
-                            <Grid item xs={12} md={6} lg={4} key={user.id}>
+                            <Grid sx={{flex:'1 1 30%'}} key={user.id}>
                                 <Card
                                     onClick={() => handleUserClick(user.id)}
                                     sx={{ cursor: 'pointer', transition: '0.3s', '&:hover': { boxShadow: 6 } }}

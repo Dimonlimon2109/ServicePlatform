@@ -152,16 +152,6 @@ export class ServicesService {
     }
   }
 
-  async findMyServices(userId: string) {
-    return this.prisma.service.findMany({
-      where: { providerId: userId },
-      include: {
-        provider: true,
-        reviews: true,
-      },
-    });
-  }
-
   async update(id: string, data: UpdateServiceData, userId: string) {
     const service = await this.prisma.service.findUnique({ where: { id } });
 
@@ -173,7 +163,6 @@ export class ServicesService {
       throw new ForbiddenException('Нет доступа к изменению этой услуги');
     }
 
-    // Исключаем возможность изменения поля rating
     const { rating, ...sanitizedData } = data as any;
 
     return this.prisma.service.update({
@@ -192,13 +181,13 @@ export class ServicesService {
     console.log(service);
     console.log(userId);
     if (service.providerId !== userId && userType !== 'ADMIN') {
-      throw new ForbiddenException('You do not have permission to delete this service.');
+      throw new ForbiddenException('У вас нет прав на удаление этого сервиса');
     }
 
     await this.prisma.service.delete({
       where: { id },
     });
 
-    return { message: 'Service deleted successfully' };
+    return { message: 'Сервис успешно удален' };
   }
 }

@@ -87,7 +87,7 @@ const UserServices = () => {
                 <>
                     <Grid container spacing={3}>
                         {services.map((service) => (
-                            <Grid item xs={12} sm={6} md={4} key={service.id}>
+                            <Grid sx={{flex:'0 0 100%'}} key={service.id}>
                                 <ServiceCard service={service} />
 
                                 {/* Контейнер для кнопок */}

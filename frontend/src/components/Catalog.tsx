@@ -85,7 +85,7 @@ export default function Catalog() {
 
             const response = await axios.get('/services', { params });
 
-            const mappedServices = response.data.data.map((s: any) => ({
+            const mappedServices = response.data.data.map((s) => ({
                 ...s,
                 image: s.photoPath,
             }));
@@ -225,7 +225,7 @@ export default function Catalog() {
             <Grid container spacing={4}>
                 {services.length > 0 ? (
                     services.map((service) => (
-                        <Grid item xs={12} key={service.id}>
+                        <Grid sx={{flex: '0 0 1200px'}} key={service.id}>
                             <ServiceCard service={service} onDelete={handleDelete} />
                         </Grid>
                     ))

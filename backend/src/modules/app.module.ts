@@ -13,6 +13,7 @@ import {StripeModule} from "./stripe.module";
 import {ChatModule} from "./chat.module";
 import {FavoritesModule} from "./favorites.module";
 import process from "node:process";
+import {MailModule} from "./mail.module";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import process from "node:process";
     MessagesModule,
     StripeModule,
       ChatModule,
+      MailModule,
   ]
 })
 export class AppModule {}

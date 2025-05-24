@@ -9,8 +9,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');
-  app.use('/stripe/webhook', bodyParser.raw({ type: 'application/json' }));
-    app.use(bodyParser.json());
+  app.use('/api/stripe/webhook', bodyParser.raw({ type: 'application/json' }));
+  app.use(bodyParser.json());
 
   app.useGlobalFilters(new AllExceptionsFilter());
 

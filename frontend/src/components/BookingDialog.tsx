@@ -58,6 +58,7 @@ export default function BookingDialog({ open, onClose, serviceId, userId }: Book
                     value={date}
                     onChange={(newValue) => setDate(newValue)}
                     minDateTime={dayjs()}
+                    enableAccessibleFieldDOMStructure={false}
                     slots={{ textField: TextField }}
                     slotProps={{ textField: { fullWidth: true, margin: 'normal' } }}
                 />

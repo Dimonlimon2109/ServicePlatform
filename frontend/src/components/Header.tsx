@@ -27,7 +27,7 @@ const Header = () => {
                     >
                         Главная
                     </Typography>
-                    <Button color="inherit" onClick={() => navigate('/catalog')}>
+                    <Button color="inherit" onClick={() => navigate('/')}>
                         Каталог
                     </Button>
                     {userType === 'ADMIN' && (

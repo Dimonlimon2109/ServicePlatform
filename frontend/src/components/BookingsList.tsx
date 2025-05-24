@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import axios from '../api/axiosInstance.ts';
 import dayjs from 'dayjs';
 import {toast} from "react-toastify";
-import {CalendarToday, Cancel, CheckCircle, Payment, RateReview, Star } from '@mui/icons-material';
+import {CalendarToday, Cancel, Payment, RateReview, Star } from '@mui/icons-material';
 
 const statusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', "PAID"];
 const statusTranslations: Record<string, string> = {
@@ -70,13 +70,12 @@ console.log(reviewRating);
 
     const fetchBookings = async () => {
         const params: any = {
-            page,
+            page: page,
             limit: 6,
         };
         if (status) params.status = status;
         if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
-
         const { data } = await axios.get('/bookings/user/me', { params });
         setBookings(data.items);
         setTotalPages(Math.ceil(data.total / 6));
@@ -89,13 +88,6 @@ console.log(reviewRating);
     const handleCancel = async (id: number) => {
         await axios.put(`/bookings/${id}`, {
             status: 'CANCELLED',
-        });
-        fetchBookings();
-    };
-
-    const handleComplete = async (id: number) => {
-        await axios.put(`/bookings/${id}`,{
-            status: 'COMPLETED',
         });
         fetchBookings();
     };
@@ -113,10 +105,10 @@ console.log(reviewRating);
                 // Перенаправляем пользователя на страницу оплаты
                 window.location.href = response.data.url;
             } else {
-                alert('Ошибка при создании сессии оплаты!');
+                toast.error('Ошибка при создании сессии оплаты!');
             }
         } catch (error) {
-            alert('Ошибка при обработке запроса на оплату!');
+            toast.error('Ошибка при обработке запроса на оплату!');
         }
     };
     return (
@@ -199,7 +191,6 @@ console.log(reviewRating);
                                 borderRadius: 4,
                                 overflow: 'hidden'
                             }}>
-                                {/* Изображение сервиса */}
                                 {booking.service?.photoPath && (
                                     <CardMedia
                                         component="img"
@@ -289,7 +280,7 @@ console.log(reviewRating);
                 <Pagination
                     count={totalPages}
                     page={page}
-                    onChange={(val) => setPage(val)}
+                    onChange={(_, val) => setPage(val)}
                     color="primary"
                     shape="rounded"
                     size="large"

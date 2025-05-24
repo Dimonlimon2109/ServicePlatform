@@ -31,10 +31,8 @@ export class AuthService {
       throw new ConflictException('Email уже используется');
     }
 
-    // Hash password
     const hashedPassword = await this.hashPassword(password);
 
-    // Create user
     const user = await this.prisma.user.create({
       data: {
         email,
@@ -123,7 +121,7 @@ export class AuthService {
       },
     });
 
-    return { message: 'Logged out successfully' };
+    return { message: 'Успешный выход из аккаунта' };
   }
 
   private async hashPassword(password:string):Promise<string>{

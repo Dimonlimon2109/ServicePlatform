@@ -202,7 +202,7 @@ const ServiceBookingsList = ({
                 count={totalPages * rowsPerPage}
                 rowsPerPage={rowsPerPage}
                 page={page - 1}
-                onPageChange={(event, newPage) => onPageChange(newPage + 1)}
+                onPageChange={(_, newPage) => onPageChange(newPage + 1)}
                 onRowsPerPageChange={(event) => {
                     const newRows = parseInt(event.target.value, 10);
                     onRowsPerPageChange(newRows);
