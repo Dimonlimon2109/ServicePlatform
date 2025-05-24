@@ -41,7 +41,7 @@ instance.interceptors.response.use(
             }
 
             try {
-                const response = await axios.post('http://localhost:3000/auth/refresh', {
+                const response = await axios.post('http://localhost:3000/api/auth/refresh', {
                     refreshToken,
                 });
 

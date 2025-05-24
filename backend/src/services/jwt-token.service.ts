@@ -63,4 +63,13 @@ export class JwtTokenService {
       },
     });
   }
+  async verifyRefreshToken(token: string): Promise<JwtPayload> {
+    try {
+      return await this.jwtService.verifyAsync<JwtPayload>(token, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      });
+    } catch (error) {
+      throw new UnauthorizedException('Недействительный токен');
+    }
+  }
 }
