@@ -1,15 +1,18 @@
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import axios from "../api/axiosInstance";
 
 const Header = () => {
     const navigate = useNavigate();
     const handleLogin = () => navigate('/login');
     const handleRegister = () => navigate('/register');
     const handleLogout = () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('userType');
-        navigate('/');
+        axios.post('auth/logout', localStorage.accessToken).then(() => {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userType');
+            navigate('/');
+        });
     };
 
     const isAuthenticated = Boolean(localStorage.accessToken);

@@ -13,10 +13,12 @@ import ServiceBookingsPage from './pages/ServiceBookingsPage.tsx';
 import ChatPage from './pages/ChatPage.tsx';
 import UsersPage from "./pages/UsersPage.tsx";
 import FavoritesPage from "./pages/FavoritesPage.tsx";
+import Header from "./components/Header.tsx";
 
 function App() {
     return (
         <BrowserRouter>
+            <Header />
                 <Routes>
                     <Route path="/" element={<CatalogPage />} />
                     <Route path="/login" element={<LoginPage />} />
