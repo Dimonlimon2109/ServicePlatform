@@ -13,6 +13,7 @@ import {
 import axios from '../api/axiosInstance';
 import ServiceCard from './ServiceCard';
 import {Search, Star} from '@mui/icons-material';
+import {useAuth} from "../hooks/useAuth.ts";
 
 type Service = {
     id: number;
@@ -39,6 +40,25 @@ export default function Catalog() {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [rating, setRating] = useState<number | null>(null);
+
+    const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+    const {user} = useAuth(); // Получаем ID текущего пользователя
+
+    useEffect(() => {
+        // Добавляем загрузку избранного
+        const loadFavorites = async () => {
+            if (user?.id) {
+                try {
+                    const response = await axios.get(`/favorites/${user.id}`);
+                    const favorites = response.data;
+                    setFavoriteIds(favorites.map((f: any) => f.serviceId));
+                } catch (err) {
+                    console.error('Ошибка загрузки избранного:', err);
+                }
+            }
+        };
+        loadFavorites();
+    }, [user?.id]);
 
     useEffect(() => {
         // Инициализация категорий (можно заменить запросом с бэка)
@@ -97,12 +117,19 @@ export default function Catalog() {
         }
     };
 
-    const handleDelete = async (id: number) => {
+    const handleFavoriteToggle = async (serviceId: number) => {
+        if (!user.id) return;
+        console.log("!!!!!!!!!!!!!!!!!!!!");
         try {
-            await axios.delete(`/services/${id}`);
-            fetchServices();
+            if (favoriteIds.includes(serviceId)) {
+                await axios.delete(`/favorites/${serviceId}`);
+                setFavoriteIds(prev => prev.filter(id => id !== serviceId));
+            } else {
+                await axios.post('/favorites', { userId: user.id, serviceId: serviceId });
+                setFavoriteIds(prev => [...prev, serviceId]);
+            }
         } catch (err) {
-            console.error('Ошибка при удалении услуги:', err);
+            console.error('Ошибка обновления избранного:', err);
         }
     };
 
@@ -225,8 +252,10 @@ export default function Catalog() {
             <Grid container spacing={4}>
                 {services.length > 0 ? (
                     services.map((service) => (
-                        <Grid sx={{flex: '0 0 1200px'}} key={service.id}>
-                            <ServiceCard service={service} onDelete={handleDelete} />
+                        <Grid sx={{flex: "0 0 100%"}} key={service.id}>
+                            <ServiceCard service={service}
+                                         isFavorite={favoriteIds.includes(service.id)}
+                                         onFavoriteToggle={handleFavoriteToggle}/>
                         </Grid>
                     ))
                 ) : (

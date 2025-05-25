@@ -34,16 +34,17 @@ export class FavoritesService {
         });
     }
 
-    async removeFromFavorites(dto: CreateFavoriteDto) {
+    async removeFromFavorites(userId: string, serviceId: string) {
         return this.prisma.favorite.delete({
             where: {
                 userId_serviceId: {
-                    userId: dto.userId,
-                    serviceId: dto.serviceId,
+                    userId,
+                    serviceId,
                 },
             },
         });
     }
+
 
     async getUserFavorites(userId: string) {
         return this.prisma.favorite.findMany({

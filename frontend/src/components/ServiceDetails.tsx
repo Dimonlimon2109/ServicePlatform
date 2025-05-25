@@ -150,7 +150,7 @@ export default function ServiceDetails() {
                             </>
                         )}
 
-                        {user?.userType === 'ADMIN' || !isCommonUser && (
+                        {(user && user.userType === 'ADMIN') || !isCommonUser && (
                             <Button
                                 variant="contained"
                                 color="error"

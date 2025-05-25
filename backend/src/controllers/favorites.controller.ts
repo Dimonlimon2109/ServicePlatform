@@ -6,7 +6,8 @@ import {
     Body,
     Param,
     HttpCode,
-    HttpStatus,
+    HttpStatus, UseGuards,
+    Request,
 } from '@nestjs/common';
 import { FavoritesService } from '../services/favorites.service';
 import { CreateFavoriteDto } from '../dto/create-favorite.dto';
@@ -22,9 +23,15 @@ import {
     ApiBadRequestResponse,
     ApiNotFoundResponse,
 } from '@nestjs/swagger';
+import {JwtAuthGuard} from "../guards/jwt-auth.guard";
+import {Role} from "../enums/role.enum";
+import {RolesGuard} from "../guards/roles.guard";
+import {Roles} from "../decorators/roles.decorator";
 
 @ApiTags('Favorites - Избранные услуги')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
+@Roles(Role.User)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('favorites')
 export class FavoritesController {
     constructor(private readonly favoritesService: FavoritesService) {}
@@ -83,16 +90,11 @@ export class FavoritesController {
         return this.favoritesService.addToFavorites(dto);
     }
 
-    @Delete()
+    @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiOperation({ summary: 'Удалить услугу из избранного' })
-    @ApiBody({
-        type: CreateFavoriteDto,
-        description: 'Данные для удаления из избранного',
-    })
-    @ApiNoContentResponse({
-        description: 'Услуга успешно удалена из избранного',
-    })
+    @ApiOperation({ summary: 'Удалить услугу из избранного по serviceId' })
+    @ApiParam({ name: 'id', type: Number, description: 'ID услуги (serviceId)' })
+    @ApiNoContentResponse({ description: 'Услуга успешно удалена из избранного' })
     @ApiNotFoundResponse({
         description: 'Запись в избранном не найдена',
         schema: {
@@ -103,9 +105,14 @@ export class FavoritesController {
             },
         },
     })
-    removeFromFavorites(@Body() dto: CreateFavoriteDto) {
-        return this.favoritesService.removeFromFavorites(dto);
+    removeFromFavorites(
+        @Param('id') serviceId: string,
+        @Request() req: any,
+    ) {
+        const userId = req.user.id;
+        return this.favoritesService.removeFromFavorites(userId, serviceId);
     }
+
 
     @Get(':userId')
     @ApiOperation({ summary: 'Получить избранные услуги пользователя' })
