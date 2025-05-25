@@ -1,22 +1,23 @@
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from "../api/axiosInstance";
+import {useAuth} from "../hooks/useAuth.ts";
 
 const Header = () => {
     const navigate = useNavigate();
+    const {user} = useAuth();
+
     const handleLogin = () => navigate('/login');
     const handleRegister = () => navigate('/register');
     const handleLogout = () => {
         axios.post('auth/logout', localStorage.accessToken).then(() => {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
-            localStorage.removeItem('userType');
             navigate('/');
         });
     };
 
     const isAuthenticated = Boolean(localStorage.accessToken);
-    const userType = localStorage.userType;
 
     return (
         <AppBar position="sticky">
@@ -33,7 +34,7 @@ const Header = () => {
                     <Button color="inherit" onClick={() => navigate('/')}>
                         Каталог
                     </Button>
-                    {userType === 'ADMIN' && (
+                    {user?.userType === 'ADMIN' && (
                         <Button color="inherit" onClick={() => navigate('/users')}>
                             Пользователи
                         </Button>

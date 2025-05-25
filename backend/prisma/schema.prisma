@@ -32,7 +32,7 @@ model User {
   userType         UserType
   isBlocked        Boolean        @default(false)
   createdAt        DateTime       @default(now())
-  services         Service[]
+  services          Service[]
   favourites       Favorite[]
   bookings         Booking[]
   reviews          Review[]

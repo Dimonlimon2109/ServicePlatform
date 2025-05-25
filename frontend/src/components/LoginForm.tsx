@@ -12,11 +12,10 @@ const Login = () => {
     const handleLogin = async () => {
         try {
             const response = await axios.post(`/auth/login`, { email, password });
-            const { accessToken, refreshToken, user } = response.data;
+            const { accessToken, refreshToken } = response.data;
 
             localStorage.setItem('accessToken', accessToken);
             localStorage.setItem('refreshToken', refreshToken);
-            localStorage.setItem('userType', user.userType);
             navigate('/');
         } catch (error: any) {
             if (error.response?.status === 401) {

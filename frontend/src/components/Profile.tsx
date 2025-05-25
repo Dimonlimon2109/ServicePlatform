@@ -18,6 +18,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import axios from '../api/axiosInstance';
 import { useNavigate, useParams } from 'react-router-dom';
+import {useAuth} from "../hooks/useAuth.ts";
 
 interface ProfileData {
     id: string;
@@ -53,6 +54,7 @@ export default function Profile() {
     const [changePasswordOpen, setChangePasswordOpen] = useState(false);
     const { id } = useParams();
     const navigate = useNavigate();
+    const {user} = useAuth();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -222,10 +224,10 @@ export default function Profile() {
         }
     };
 
-    const canEdit = !id || localStorage.userId === id || localStorage.userType === 'ADMIN';
-    const canChangePassword = !id || localStorage.userId === id || localStorage.userType === 'ADMIN';
-    const canBlockOrUnblock = id && localStorage.userType === 'ADMIN' && typeof profile?.isBlocked === 'boolean';
-    const isAdmin = localStorage.userType === 'ADMIN';
+    const canEdit = !id || user?.id === id || user?.userType === 'ADMIN';
+    const canChangePassword = !id || user?.id === id || user?.userType === 'ADMIN';
+    const canBlockOrUnblock = id && user?.userType === 'ADMIN' && typeof profile?.isBlocked === 'boolean';
+    const isAdmin = user?.userType === 'ADMIN';
 
     if (loading) return (
         <Box display="flex" justifyContent="center" mt={4}>
