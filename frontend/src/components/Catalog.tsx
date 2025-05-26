@@ -14,9 +14,10 @@ import axios from '../api/axiosInstance';
 import ServiceCard from './ServiceCard';
 import {Search, Star} from '@mui/icons-material';
 import {useAuth} from "../hooks/useAuth.ts";
+import {serviceCategories} from "../data/categories.ts";
 
 type Service = {
-    id: number;
+    id: string;
     title: string;
     description: string;
     price: number;
@@ -25,27 +26,20 @@ type Service = {
     image?: string;
 };
 
-type Category = {
-    id: number;
-    name: string;
-};
-
 export default function Catalog() {
     const [services, setServices] = useState<Service[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [price, setPrice] = useState<number[]>([0, 100000]);
+    const [price, setPrice] = useState<number[]>([0, 10000]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [rating, setRating] = useState<number | null>(null);
 
-    const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+    const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
     const {user} = useAuth(); // Получаем ID текущего пользователя
 
     useEffect(() => {
-        // Добавляем загрузку избранного
         const loadFavorites = async () => {
             if (user?.id) {
                 try {
@@ -59,15 +53,6 @@ export default function Catalog() {
         };
         loadFavorites();
     }, [user?.id]);
-
-    useEffect(() => {
-        // Инициализация категорий (можно заменить запросом с бэка)
-        setCategories([
-            { id: 1, name: 'Ремонт' },
-            { id: 2, name: 'Обучение' },
-            { id: 3, name: 'Консультации' },
-        ]);
-    }, []);
 
     useEffect(() => {
         // Добавим debounce для оптимизации запросов при вводе поиска
@@ -117,9 +102,8 @@ export default function Catalog() {
         }
     };
 
-    const handleFavoriteToggle = async (serviceId: number) => {
+    const handleFavoriteToggle = async (serviceId: string) => {
         if (!user.id) return;
-        console.log("!!!!!!!!!!!!!!!!!!!!");
         try {
             if (favoriteIds.includes(serviceId)) {
                 await axios.delete(`/favorites/${serviceId}`);
@@ -154,10 +138,10 @@ export default function Catalog() {
                 mb: 4,
                 p: 3,
                 boxShadow: 3,
-                borderRadius: 4
+                borderRadius: 4,
             }}>
                 <Box display="flex" gap={3} flexWrap="wrap">
-                    <Box flex="1 1 300px">
+                    <Box flex="1 1 auto" sx={{marginTop: '30px'}}>
                         <TextField
                             fullWidth
                             variant="outlined"
@@ -178,31 +162,43 @@ export default function Catalog() {
                         />
                     </Box>
 
-                    <Box flex="1 1 200px">
-                        <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                            Категория
-                        </Typography>
-                        <Select
-                            fullWidth
+                    <Box flex="1 1 auto" sx={{marginTop: '30px'}}>
+                        <TextField
+                            select
+                            label="Категория"
+                            name="category"
                             value={selectedCategory}
                             onChange={(e) => {
-                                setPage(1);
                                 setSelectedCategory(e.target.value);
                             }}
-                            variant="outlined"
-                            sx={{ borderRadius: 3 }}
+                            required
+                            fullWidth
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 3,
+                                },
+                            }}
                         >
-                            <MenuItem value="">Все категории</MenuItem>
-                            {categories.map((cat) => (
-                                <MenuItem key={cat.id} value={cat.name}>
-                                    {cat.name}
-                                </MenuItem>
-                            ))}
-                        </Select>
+                            {serviceCategories.map((group) => [
+                                <MenuItem
+                                    key={group.name}
+                                    value={group.name}
+                                    disabled
+                                    sx={{ fontWeight: 700, bgcolor: 'action.hover' }}
+                                >
+                                    {group.name}
+                                </MenuItem>,
+                                ...group.subcategories.map((subcat) => (
+                                    <MenuItem key={subcat} value={subcat} sx={{ pl: 4 }}>
+                                        {subcat}
+                                    </MenuItem>
+                                )),
+                            ])}
+                        </TextField>
                     </Box>
 
-                    <Box flex="1 1 240px">
-                        <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                    <Box flex="1 1 auto">
+                        <Typography variant="subtitle2" color="text.secondary" mb={1} sx={{marginBottom: '20px'}}>
                             Ценовой диапазон
                         </Typography>
                         <Slider
@@ -214,17 +210,17 @@ export default function Catalog() {
                             valueLabelDisplay="auto"
                             valueLabelFormat={(v) => `${v} BYN`}
                             min={0}
-                            max={1000}
+                            max={10000}
                             sx={{ color: 'primary.main' }}
                         />
                     </Box>
 
-                    <Box flex="1 1 200px">
+                    <Box flex="1 1 auto">
                         <Typography variant="subtitle2" color="text.secondary" mb={1}>
                             Минимальный рейтинг
                         </Typography>
                         <Select
-                            fullWidth
+
                             value={rating ?? ''}
                             onChange={(e) => {
                                 setRating(e.target.value === '' ? null : Number(e.target.value));
@@ -252,10 +248,13 @@ export default function Catalog() {
             <Grid container spacing={4}>
                 {services.length > 0 ? (
                     services.map((service) => (
-                        <Grid sx={{flex: "0 0 100%"}} key={service.id}>
-                            <ServiceCard service={service}
-                                         isFavorite={favoriteIds.includes(service.id)}
-                                         onFavoriteToggle={handleFavoriteToggle}/>
+                        <Grid sx={{ flex: "0 0 100%" }} key={service.id}>
+                            <ServiceCard
+                                service={service}
+                                isFavorite={favoriteIds.includes(service.id)}
+                                onFavoriteToggle={handleFavoriteToggle}
+                                currentUserId={user?.id} // Добавляем передачу ID текущего пользователя
+                            />
                         </Grid>
                     ))
                 ) : (

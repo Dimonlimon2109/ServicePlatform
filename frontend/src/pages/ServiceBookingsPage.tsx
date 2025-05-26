@@ -90,10 +90,11 @@ const ServiceBookingsPage = () => {
                         <MenuItem value="CONFIRMED">Подтверждено</MenuItem>
                         <MenuItem value="CANCELLED">Отменено</MenuItem>
                         <MenuItem value="COMPLETED">Завершено</MenuItem>
+                        <MenuItem value="PAID">Оплачено</MenuItem>
                     </TextField>
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
+                <Grid>
                     <TextField
                         fullWidth
                         label="Дата начала"
@@ -105,7 +106,7 @@ const ServiceBookingsPage = () => {
                     />
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
+                <Grid>
                     <TextField
                         fullWidth
                         label="Дата конца"

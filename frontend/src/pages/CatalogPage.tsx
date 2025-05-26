@@ -1,6 +1,5 @@
 import { Box } from "@mui/material";
 import Catalog from "../components/Catalog";
-import Header from "../components/Header.tsx";
 
 export default function CatalogPage() {
     return (

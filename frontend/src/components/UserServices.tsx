@@ -11,6 +11,7 @@ interface Service {
     photoPath?: string;
     price: number;
     rating: number;
+    providerId: string;
 }
 
 interface PaginatedResponse {
@@ -88,7 +89,7 @@ const UserServices = () => {
                     <Grid container spacing={3}>
                         {services.map((service) => (
                             <Grid sx={{flex:'0 0 100%'}} key={service.id}>
-                                <ServiceCard service={service} />
+                                <ServiceCard service={service} currentUserId={service?.providerId} />
 
                                 {/* Контейнер для кнопок */}
                                 <Stack spacing={1} mt={1.5}>

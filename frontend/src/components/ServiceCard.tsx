@@ -34,50 +34,72 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 type Service = {
-    id: number;
+    id: string;
     title: string;
     description: string;
     price: number;
     rating: number;
     photoPath?: string;
+    providerId: string;
 };
 
 type ServiceCardProps = {
     service: Service;
     isFavorite: boolean;
-    onFavoriteToggle: (serviceId: number) => void;
+    onFavoriteToggle: (serviceId: string)=> void;
+    currentUserId?: string; // Добавляем новый проп
 };
 
 export default function ServiceCard({
                                         service,
                                         isFavorite,
-                                        onFavoriteToggle
+                                        onFavoriteToggle,
+                                        currentUserId
                                     }: ServiceCardProps) {
     const theme = useTheme();
     const navigate = useNavigate();
 
     return (
         <StyledCard>
-            {/* Кнопка избранного */}
-            <IconButton
-                sx={{
-                    position: 'absolute',
-                    top: 10,
-                    right: 10,
-                    zIndex: 1,
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                    '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)'
-                    }
-                }}
-                onClick={() => onFavoriteToggle(service.id)}
-            >
-                {isFavorite ? (
-                    <Favorite sx={{ color: theme.palette.error.main }} />
+            <Box sx={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                zIndex: 1,
+            }}>
+                {service.providerId === currentUserId ? (
+                    <Chip
+                        label="Ваша услуга"
+                        color="success"
+                        sx={{
+                            backgroundColor: theme.palette.success.light,
+                            color: theme.palette.success.contrastText,
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            '& .MuiChip-label': {
+                                px: 1.5,
+                                py: 0.5,
+                            }
+                        }}
+                    />
                 ) : (
-                    <FavoriteBorder sx={{ color: theme.palette.text.primary }} />
+                    <IconButton
+                        sx={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                            '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)'
+                            }
+                        }}
+                        onClick={() => onFavoriteToggle(service.id)}
+                    >
+                        {isFavorite ? (
+                            <Favorite sx={{ color: theme.palette.error.main }} />
+                        ) : (
+                            <FavoriteBorder sx={{ color: theme.palette.text.primary }} />
+                        )}
+                    </IconButton>
                 )}
-            </IconButton>
+            </Box>
 
             <CardMedia
                 component="img"

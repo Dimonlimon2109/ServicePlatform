@@ -12,6 +12,7 @@ import {
     Typography,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import {useAuth} from "../hooks/useAuth.ts";
 
 interface ChatComponentProps {
     receiverId: string;
@@ -27,7 +28,7 @@ interface Message {
 let socket: Socket;
 
 const ChatComponent: React.FC<ChatComponentProps> = ({ receiverId }) => {
-    const [me, setMe] = useState<string>('');
+    const {user} = useAuth();
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -36,9 +37,6 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ receiverId }) => {
     useEffect(() => {
         const fetchProfileAndChat = async () => {
             try {
-                const res = await axios.get('/users/profile/me');
-                const userId = res.data.id;
-                setMe(userId);
 
                 // Загрузка истории сообщений
                 const chatRes = await axios.get(`/messages/chat/${receiverId}`);
@@ -76,7 +74,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ receiverId }) => {
         if (!input.trim()) return;
 
         const message: Message = {
-            senderId: me,
+            senderId: user.id,
             receiverId,
             content: input.trim(),
             sentAt: new Date().toISOString(),
@@ -94,12 +92,12 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ receiverId }) => {
                     {messages.map((msg, index) => (
                         <ListItem
                             key={index}
-                            sx={{ justifyContent: msg.senderId === me ? 'flex-end' : 'flex-start' }}
+                            sx={{ justifyContent: msg.senderId === user.id ? 'flex-end' : 'flex-start' }}
                         >
                             <Box
                                 sx={{
-                                    bgcolor: msg.senderId === me ? '#1976d2' : '#e0e0e0',
-                                    color: msg.senderId === me ? '#fff' : '#000',
+                                    bgcolor: msg.senderId === user.id ? '#1976d2' : '#e0e0e0',
+                                    color: msg.senderId === user.id ? '#fff' : '#000',
                                     px: 2,
                                     py: 1,
                                     borderRadius: 2,

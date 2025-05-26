@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Container, Grid, Typography, Box, CircularProgress, Alert } from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import instance from '../api/axiosInstance';
-import FavoriteServiceCard from '../components/FavoriteServiceCard';
+import ServiceCard from '../components/ServiceCard';
+import {useAuth} from "../hooks/useAuth.ts";
+import axios from "../api/axiosInstance.ts";
 
 interface Favorite {
     id: string;
@@ -27,16 +28,14 @@ const FavoritesPage = () => {
     const [favorites, setFavorites] = useState<Favorite[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [userId, setUserId] = useState('');
+    const {user} = useAuth();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const userRes = await instance.get('/users/profile/me');
-                setUserId(userRes.data.id);
-
-                const favoritesRes = await instance.get(`/favorites/${userRes.data.id}`);
+                const favoritesRes = await axios.get(`/favorites/${user?.id}`);
                 setFavorites(favoritesRes.data);
+                console.log(favorites);
             } catch (err) {
                 setError('Ошибка загрузки избранного');
             } finally {
@@ -45,13 +44,12 @@ const FavoritesPage = () => {
         };
 
         fetchData();
-    }, []);
+    }, [user]);
 
-    const handleRemove = async (serviceId: string) => {
+    const handleFavoriteToggle = async (serviceId: string) => {
         try {
-            await instance.delete('/favorites', {
-                data: { userId, serviceId }
-            });
+            console.log(serviceId);
+            await axios.delete(`/favorites/${serviceId}`);
             setFavorites(prev => prev.filter(f => f.service.id !== serviceId));
         } catch (err) {
             console.error('Ошибка удаления:', err);
@@ -104,9 +102,19 @@ const FavoritesPage = () => {
                 <Grid container spacing={3}>
                     {favorites.map((favorite) => (
                         <Grid item key={favorite.id} xs={12} sm={6} md={4}>
-                            <FavoriteServiceCard
-                                service={favorite.service}
-                                onRemove={handleRemove}
+                            <ServiceCard
+                                service={{
+                                    id: favorite.service.id,
+                                    title: favorite.service.title,
+                                    description: favorite.service.description,
+                                    price: favorite.service.price,
+                                    rating: favorite.service.rating,
+                                    photoPath: favorite.service.photoPath,
+                                    providerId: favorite.service.provider.id
+                                }}
+                                isFavorite={true}
+                                onFavoriteToggle={handleFavoriteToggle}
+                                currentUserId={user?.id}
                             />
                         </Grid>
                     ))}

@@ -83,19 +83,29 @@ const ServiceBookingsList = ({
         return !['CANCELLED', 'PENDING', 'COMPLETED'].includes(status) && now >= endDate;
     };
 
+    const statusLabels: Record<string, string> = {
+        PENDING: 'Ожидает',
+        CONFIRMED: 'Подтверждено',
+        PAID: 'Оплачено',
+        COMPLETED: 'Завершено',
+        CANCELLED: 'Отменено',
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'CONFIRMED':
                 return 'primary';
+            case 'PAID':
+                return 'info';
             case 'COMPLETED':
                 return 'success';
             case 'CANCELLED':
                 return 'error';
+            case 'PENDING':
             default:
                 return 'default';
         }
     };
-
     const formatDateTime = (dateString: string) => {
         const date = new Date(dateString);
         return (
@@ -105,6 +115,8 @@ const ServiceBookingsList = ({
             </>
         );
     };
+
+
 
     return (
         <Paper sx={{ overflow: 'hidden' }}>
@@ -130,7 +142,7 @@ const ServiceBookingsList = ({
                                 <TableCell>{formatDateTime(booking.date)}</TableCell>
                                 <TableCell>
                                     <StatusChip
-                                        label={booking.status}
+                                        label={statusLabels[booking.status] || booking.status}
                                         color={getStatusColor(booking.status)}
                                         size="small"
                                     />

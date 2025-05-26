@@ -15,13 +15,21 @@ interface BookingDialogProps {
 }
 
 export default function BookingDialog({ open, onClose, serviceId, userId }: BookingDialogProps) {
-    const [date, setDate] = useState<Dayjs | null>(dayjs());
+    const [date, setDate] = useState<Dayjs | null>(dayjs().add(1, 'hour'));
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
     const handleBooking = async () => {
-        if (!date) return;
+        if (!date) {
+            setError('Укажите дату и время');
+            return;
+        }
+
+        if (date.isBefore(dayjs())) {
+            setError('Дата и время должны быть в будущем');
+            return;
+        }
 
         setLoading(true);
         setError(null);
@@ -58,9 +66,18 @@ export default function BookingDialog({ open, onClose, serviceId, userId }: Book
                     value={date}
                     onChange={(newValue) => setDate(newValue)}
                     minDateTime={dayjs()}
+                    format="DD.MM.YYYY HH:mm"
+                    disablePast
+                    ampm={false}
                     enableAccessibleFieldDOMStructure={false}
                     slots={{ textField: TextField }}
-                    slotProps={{ textField: { fullWidth: true, margin: 'normal' } }}
+                    slotProps={{
+                        textField: {
+                            fullWidth: true,
+                            margin: 'normal',
+                            helperText: 'Выберите дату и время в будущем'
+                        }
+                    }}
                 />
             </DialogContent>
             <DialogActions>

@@ -129,7 +129,7 @@ export class ServicesService {
 
   async findByProvider(providerId: string, page: number, limit: number) {
     const skip = (page - 1) * limit;
-    const [services, total] = await this.prisma.$transaction([
+    let [services, total] = await this.prisma.$transaction([
       this.prisma.service.findMany({
         skip,
         take: limit,
@@ -141,6 +141,7 @@ export class ServicesService {
       }),
       this.prisma.service.count(),
     ]);
+    total = total - services.length;
     return {
       data: services,
       meta: {

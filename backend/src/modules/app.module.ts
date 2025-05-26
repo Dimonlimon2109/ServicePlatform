@@ -24,7 +24,8 @@ import {MailModule} from "./mail.module";
       rootPath: __dirname.includes('dist')
           ? join(__dirname, '..', 'uploads')
           : join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads',
+      serveRoot: '/api/uploads',
+      exclude: ['/api/(.*)'],
     }),
     PrismaModule,
     AuthModule,

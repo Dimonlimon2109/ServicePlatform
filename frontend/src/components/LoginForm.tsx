@@ -9,7 +9,26 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
+    const validateForm = () => {
+        // Проверка email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            toast.error('Введите корректный email адрес');
+            return false;
+        }
+
+        // Проверка пароля
+        if (password.length < 6 || password.length > 64) {
+            toast.error('Пароль должен содержать от 6 до 64 символов');
+            return false;
+        }
+
+        return true;
+    };
+
     const handleLogin = async () => {
+        if (!validateForm()) return;
+
         try {
             const response = await axios.post(`/auth/login`, { email, password });
             const { accessToken, refreshToken } = response.data;
@@ -21,10 +40,8 @@ const Login = () => {
             if (error.response?.status === 401) {
                 toast.error('Ваш аккаунт заблокирован. Обратитесь в поддержку.');
             } else if (error.response?.status === 404) {
-                toast.error('Пользователь не найден');
-            } else if (error.response?.status === 400) {
-                toast.error('Неверный пароль');
-            } else {
+                toast.error('Неверный email или пароль');
+            }  else {
                 toast.error('Ошибка авторизации. Попробуйте снова.');
             }
         }
@@ -49,6 +66,7 @@ const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     margin="normal"
+                    helperText="Введите email в формате example@domain.com"
                 />
                 <TextField
                     label="Пароль"
@@ -58,6 +76,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     margin="normal"
+                    helperText="Пароль должен содержать от 6 до 64 символов"
                 />
                 <Button
                     variant="contained"

@@ -58,11 +58,6 @@
         where: { email },
       });
 
-      if(!user)
-      {
-        throw new NotFoundException('Пользователя с данным email не существует');
-      }
-
       if (user.isBlocked) {
         throw new UnauthorizedException('Пользователь заблокирован');
       }
@@ -72,7 +67,7 @@
         return result;
       }
       else{
-        throw new BadRequestException('Неверный пароль');
+        throw new NotFoundException('Неверный email или пароль');
       }
     }
 

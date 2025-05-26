@@ -7,8 +7,6 @@ import {
     Button,
     TextField,
     IconButton,
-    Snackbar,
-    Alert,
     Dialog,
     DialogActions,
     DialogContent,
@@ -19,6 +17,7 @@ import LockResetIcon from '@mui/icons-material/LockReset';
 import axios from '../api/axiosInstance';
 import { useNavigate, useParams } from 'react-router-dom';
 import {useAuth} from "../hooks/useAuth.ts";
+import {toast} from "react-toastify";
 
 interface ProfileData {
     id: string;
@@ -49,8 +48,6 @@ export default function Profile() {
     });
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const [changePasswordOpen, setChangePasswordOpen] = useState(false);
     const { id } = useParams();
     const navigate = useNavigate();
@@ -90,11 +87,15 @@ export default function Profile() {
 
     const validatePassword = () => {
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            setError('Новый пароль и подтверждение не совпадают');
+            toast.error('Новый пароль и подтверждение не совпадают');
             return false;
         }
-        if (passwordData.newPassword.length < 6) {
-            setError('Пароль должен содержать минимум 6 символов');
+        if (passwordData.newPassword.length < 6 || passwordData.newPassword.length > 64) {
+            toast.error('Пароль должен содержать минимум 6 символов и максимум 64 символа');
+            return false;
+        }
+        if (passwordData.newPassword === passwordData.currentPassword) {
+            toast.error('Новый пароль совпадает со старым');
             return false;
         }
         return true;
@@ -106,32 +107,52 @@ export default function Profile() {
 
         try {
             setActionLoading(true);
-            setError('');
-            setSuccess('');
 
             await axios.put(`/users/${profile.id}/password`, {
                 currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword
             });
 
-            setSuccess('Пароль успешно изменен!');
+            toast.success('Пароль успешно изменен!');
             setChangePasswordOpen(false);
             setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Ошибка при изменении пароля');
-            console.error('Password change error:', err);
+            console.log();
+
+            toast.error(err.response?.data?.message.message);
         } finally {
             setActionLoading(false);
         }
     };
 
+    // Добавим новую функцию валидации профиля
+    const validateProfileData = () => {
+        if (!editedData.firstName?.trim()) {
+            toast.error('Имя обязательно для заполнения');
+            return false;
+        }
+        if (!editedData.lastName?.trim()) {
+            toast.error('Фамилия обязательна для заполнения');
+            return false;
+        }
+        if (!editedData.phone?.trim()) {
+            toast.error('Номер телефона обязателен для заполнения');
+            return false;
+        }
+        if (editedData.phone && !/^\+375(25|29|33|44)\d{7}$/.test(editedData.phone)) {
+            toast.error('Телефон должен быть в формате +375|25|29|33|44|XXXXXXX');
+            return false;
+        }
+        return true;
+    };
+
+
+
     const handleSave = async () => {
         if (!profile || !profile.id) return;
-
+        if (!validateProfileData()) return;
         try {
             setActionLoading(true);
-            setError('');
-            setSuccess('');
 
             const changes = Object.keys(editedData).filter(
                 key => editedData[key as keyof ProfileData] !== profile[key as keyof ProfileData]
@@ -152,9 +173,9 @@ export default function Profile() {
             setProfile(response.data);
             setEditedData(response.data);
             setEditMode(false);
-            setSuccess('Данные успешно обновлены!');
+            toast.success('Данные успешно обновлены!');
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Ошибка при обновлении данных');
+            toast.error(err.response?.data?.message || 'Ошибка при обновлении данных');
             console.error('Update error:', err);
         } finally {
             setActionLoading(false);
@@ -180,9 +201,9 @@ export default function Profile() {
             );
 
             setProfile(prev => prev ? {...prev, profilePhotoPath: response.data.profilePhotoPath} : null);
-            setSuccess('Фото профиля успешно обновлено!');
+            toast.success('Фото профиля успешно обновлено!');
         } catch (err) {
-            setError('Ошибка при загрузке изображения');
+            toast.error('Ошибка при загрузке изображения');
             console.error('Image upload error:', err);
         } finally {
             setActionLoading(false);
@@ -199,9 +220,9 @@ export default function Profile() {
 
             const res = await axios.get(`/users/${id}`);
             setProfile(res.data);
-            setSuccess(`Пользователь успешно ${profile.isBlocked ? 'разблокирован' : 'заблокирован'}`);
+            toast.success(`Пользователь успешно ${profile.isBlocked ? 'разблокирован' : 'заблокирован'}`);
         } catch (e) {
-            setError('Ошибка при изменении блокировки');
+            toast.error('Ошибка при изменении блокировки');
             console.error('Ошибка при изменении блокировки:', e);
         } finally {
             setActionLoading(false);
@@ -215,9 +236,9 @@ export default function Profile() {
         try {
             await axios.delete(`/users/${id}`);
             navigate('/users');
-            setSuccess('Пользователь успешно удалён');
+            toast.success('Пользователь успешно удалён');
         } catch (e) {
-            setError('Ошибка при удалении пользователя');
+            toast.error('Ошибка при удалении пользователя');
             console.error('Ошибка при удалении пользователя:', e);
         } finally {
             setActionLoading(false);
@@ -239,13 +260,6 @@ export default function Profile() {
 
     return (
         <Box p={4} display="flex" flexDirection="column" alignItems="center" gap={3}>
-            <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
-                <Alert severity="error" variant="filled">{error}</Alert>
-            </Snackbar>
-
-            <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess('')}>
-                <Alert severity="success" variant="filled">{success}</Alert>
-            </Snackbar>
 
             {/* Диалог смены пароля */}
             <Dialog open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)}>
@@ -300,8 +314,8 @@ export default function Profile() {
                 <Avatar
                     src={profile.profilePhotoPath}
                     sx={{
-                        width: 120,
-                        height: 120,
+                        objectFit: 'cover', width: '300px', aspectRatio: '1.66',
+                        height: '300px',
                         fontSize: '2.5rem',
                         border: theme => `2px solid ${theme.palette.primary.main}`,
                         cursor: 'pointer'
@@ -362,7 +376,7 @@ export default function Profile() {
                         onChange={handleChange}
                         fullWidth
                         variant="outlined"
-                        placeholder="+7 (XXX) XXX-XX-XX"
+                        placeholder="+375|25|29|33|44|XXXXXXX"
                     />
 
                     <Box display="flex" gap={2} justifyContent="flex-end" mt={2}>
