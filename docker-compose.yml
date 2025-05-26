@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:15
+    container_name: service_db
+    restart: always
+    environment:
+      POSTGRES_DB: service_db
+      POSTGRES_USER: service_user
+      POSTGRES_PASSWORD: service_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - service_network
+
+  backend:
+    build:
+      context: /backend
+      dockerfile: Dockerfile
+    container_name: service_backend
+    restart: always
+    volumes:
+      - ./backend/src/uploads:/app/dist/src/uploads
+    env_file:
+      - /backend/.env
+    environment:
+      DATABASE_URL: postgres://service_user:service_pass@db:5432/service_db
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - service_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    env_file:
+      - ./frontend/.env.production
+    container_name: frontend
+    ports:
+      - "3001:80"
+    networks:
+      - service_network
+    depends_on:
+      - backend
+
+
+volumes:
+  postgres_data:
+
+networks:
+  service_network:
+    driver: bridge

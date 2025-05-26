@@ -45,9 +45,5 @@ backend/prisma/.env
 .vscode/
 .idea/
 
-# Игнорирование файлов для Docker (если есть)
-docker-compose.yml
-Dockerfile
-
 # Игнорирование служебных файлов Git
 .git/
