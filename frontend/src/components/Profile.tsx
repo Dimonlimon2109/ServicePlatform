@@ -125,7 +125,6 @@ export default function Profile() {
         }
     };
 
-    // Добавим новую функцию валидации профиля
     const validateProfileData = () => {
         if (!editedData.firstName?.trim()) {
             toast.error('Имя обязательно для заполнения');

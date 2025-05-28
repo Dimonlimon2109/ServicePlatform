@@ -159,6 +159,7 @@ export default function ServiceForm() {
                     onChange={handleChange}
                     required
                     fullWidth
+                    inputProps={{ min: 1 }}
                 />
 
                 <TextField
@@ -169,6 +170,7 @@ export default function ServiceForm() {
                     onChange={handleChange}
                     required
                     fullWidth
+                    inputProps={{ min: 1 }}
                 />
             </Box>
 

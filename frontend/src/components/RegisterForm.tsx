@@ -27,7 +27,12 @@ export default function RegisterForm() {
     };
 
     const validateForm = () => {
-        // Валидация пароля
+
+        if (form.firstName.trim() === '' || form.lastName.trim() === '') {
+            toast.error('Введите имя или фамилию');
+            return false;
+        }
+
         if (form.password.length < 6 || form.password.length > 64) {
             toast.error('Пароль должен содержать от 6 до 64 символов');
             return false;
@@ -68,9 +73,16 @@ export default function RegisterForm() {
 
             toast.success('Регистрация прошла успешно!');
             navigate('/login');
-        } catch (error) {
-            toast.error('Ошибка регистрации: Неверные данные или серверная ошибка');
-            console.error('Ошибка регистрации:', error);
+        } catch (error: any) {
+            if (error.response?.status === 409)
+            {
+                toast.error('Email уже используется');
+            }
+            else
+            {
+                toast.error('Ошибка регистрации: Неверные данные или серверная ошибка');
+                console.error('Ошибка регистрации:', error);
+            }
         }
     };
 

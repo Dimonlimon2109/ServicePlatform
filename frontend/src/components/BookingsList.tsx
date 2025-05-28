@@ -171,7 +171,6 @@ console.log(reviewRating);
                 </Stack>
             </Card>
 
-            {/* Список бронирований */}
             <Grid container spacing={3}>
                 {bookings.map((booking: any) => {
                     const now = dayjs();
@@ -241,7 +240,7 @@ console.log(reviewRating);
                                             color="error"
                                             startIcon={<Cancel />}
                                             onClick={() => handleCancel(booking.id)}
-                                            disabled={!canCancel || ['CANCELLED', 'COMPLETED'].includes(booking.status)}
+                                            disabled={!canCancel || ['CANCELLED', 'COMPLETED', 'PAID'].includes(booking.status)}
                                         >
                                             Отменить бронь
                                         </Button>
@@ -263,7 +262,7 @@ console.log(reviewRating);
                                             color="secondary"
                                             startIcon={<RateReview />}
                                             onClick={() => handleOpenReviewModal(booking.service?.id)}
-                                            disabled={!['COMPLETED', 'PAID'].includes(booking.status)}
+                                            disabled={!['PAID'].includes(booking.status)}
                                         >
                                             Оставить отзыв
                                         </Button>

@@ -39,17 +39,21 @@ const Header = () => {
                             Пользователи
                         </Button>
                     )}
+                    {user?.userType === 'USER' && (
                         <Button color="inherit" onClick={() => navigate('/services/my')}>
                             Мои услуги
                         </Button>
-                    {isAuthenticated && (
+                    )}
+                    {user?.userType === 'USER' && (
                         <Button color="inherit" onClick={() => navigate('/bookings')}>
                             Бронирования
                         </Button>
                     )}
+                    {user?.userType === 'USER' && (
                         <Button color="inherit" onClick={() => navigate('/favorites')}>
                             Избранное
                         </Button>
+                        )}
                 </Box>
                 <Box>
                     {!isAuthenticated ? (

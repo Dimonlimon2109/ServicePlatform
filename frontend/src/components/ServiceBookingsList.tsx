@@ -69,18 +69,16 @@ const ServiceBookingsList = ({
                                  onAction,
                              }: Props) => {
     const navigate = useNavigate();
-    const canConfirm = (status: string) => !['CONFIRMED', 'CANCELLED', 'COMPLETED'].includes(status);
+    const canConfirm = (status: string) => !['CONFIRMED', 'CANCELLED', 'COMPLETED', 'PAID'].includes(status);
 
     const canCancel = (status: string, date: string) => {
         const now = new Date();
-        return !['COMPLETED', 'CANCELLED'].includes(status) && new Date(date) > now;
+        return !['COMPLETED', 'CANCELLED', 'PAID'].includes(status) && new Date(date) > now;
     };
 
-    const canComplete = (status: string, date: string, duration: number) => {
-        const now = new Date();
-        const endDate = new Date(date);
-        endDate.setMinutes(endDate.getMinutes() + duration);
-        return !['CANCELLED', 'PENDING', 'COMPLETED'].includes(status) && now >= endDate;
+    const canComplete = (status:string) => {
+
+        return !['CANCELLED', 'PENDING', 'COMPLETED', 'PAID'].includes(status);
     };
 
     const statusLabels: Record<string, string> = {
@@ -167,7 +165,7 @@ const ServiceBookingsList = ({
                                 </TableCell>
                                 <TableCell>
                                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                        {/*{canConfirm(booking.status) && (*/}
+                                        {canConfirm(booking.status) && (
                                             <Button
                                                 variant="outlined"
                                                 color="primary"
@@ -177,8 +175,8 @@ const ServiceBookingsList = ({
                                             >
                                                 Подтвердить
                                             </Button>
-                                        {/*)}*/}
-                                        {/*{canCancel(booking.status, booking.date) && (*/}
+                                        )}
+                                        {canCancel(booking.status, booking.date) && (
                                             <Button
                                                 variant="outlined"
                                                 color="error"
@@ -188,8 +186,8 @@ const ServiceBookingsList = ({
                                             >
                                                 Отменить
                                             </Button>
-                                        {/*)}*/}
-                                        {/*{canComplete(booking.status, booking.date, booking.service?.duration || 0) && (*/}
+                                        )}
+                                        {canComplete(booking.status) && (
                                             <Button
                                                 variant="outlined"
                                                 color="success"
@@ -199,7 +197,7 @@ const ServiceBookingsList = ({
                                             >
                                                 Завершить
                                             </Button>
-                                        {/*)}*/}
+                                            )}
                                     </div>
                                 </TableCell>
                             </TableRow>

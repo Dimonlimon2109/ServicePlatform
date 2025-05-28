@@ -29,7 +29,7 @@ type Service = {
 export default function Catalog() {
     const [services, setServices] = useState<Service[]>([]);
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [price, setPrice] = useState<number[]>([0, 10000]);
+    const [price, setPrice] = useState<number[]>([0, 2000]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
@@ -210,7 +210,7 @@ export default function Catalog() {
                             valueLabelDisplay="auto"
                             valueLabelFormat={(v) => `${v} BYN`}
                             min={0}
-                            max={10000}
+                            max={2000}
                             sx={{ color: 'primary.main' }}
                         />
                     </Box>

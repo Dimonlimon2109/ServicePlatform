@@ -138,7 +138,7 @@ export default function ServiceCard({
                             overflow: 'hidden'
                         }}
                     >
-                        {service.description}
+                        {service.description.length > 100 ? service.description.slice(0, 100) + '...' : service.description}
                     </Typography>
                 </Box>
 
