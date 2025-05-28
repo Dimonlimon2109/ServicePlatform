@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: {
+  async createReview(data: {
     rating: number;
     comment: string;
     serviceId: string;
@@ -108,7 +108,7 @@ export class ReviewsService {
   }
 
 
-  async remove(id: string, userId: string) {
+  async removeReview(id: string, userId: string) {
     const review = await this.findOne(id);
 
     if (review.userId !== userId) {

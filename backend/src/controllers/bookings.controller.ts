@@ -41,27 +41,27 @@ export class BookingsController {
     },
   })
   create(@Body() createBookingDto: any, @Request() req) {
-    return this.bookingsService.create({
+    return this.bookingsService.createBooking({
       ...createBookingDto,
       userId: req.user.id,
     });
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Получить все бронирования' })
-  @ApiResponse({ status: 200, description: 'Возвращает список всех бронирований.' })
-  findAll() {
-    return this.bookingsService.findAll();
-  }
+  // @Get()
+  // @ApiOperation({ summary: 'Получить все бронирования' })
+  // @ApiResponse({ status: 200, description: 'Возвращает список всех бронирований.' })
+  // findAllBookings() {
+  //   return this.bookingsService.findAll();
+  // }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Получить бронь по ID' })
-  @ApiParam({ name: 'id', description: 'Идентификатор брони' })
-  @ApiResponse({ status: 200, description: 'Бронирование найдено.' })
-  @ApiResponse({ status: 404, description: 'Бронирование не найдено.' })
-  findOne(@Param('id') id: string) {
-    return this.bookingsService.findOne(id);
-  }
+  // @Get(':id')
+  // @ApiOperation({ summary: 'Получить бронь по ID' })
+  // @ApiParam({ name: 'id', description: 'Идентификатор брони' })
+  // @ApiResponse({ status: 200, description: 'Бронирование найдено.' })
+  // @ApiResponse({ status: 404, description: 'Бронирование не найдено.' })
+  // findBooking(@Param('id') id: string) {
+  //   return this.bookingsService.findOne(id);
+  // }
 
   @Get('user/me')
   @ApiOperation({ summary: 'Получить свои бронирования с пагинацией и фильтрацией' })
@@ -79,7 +79,7 @@ export class BookingsController {
       @Query('page') page = '1',
       @Query('limit') limit = '10',
   ) {
-    return this.bookingsService.findByUser(req.user.id, {
+    return this.bookingsService.findBookingsByUser(req.user.id, {
       status,
       startDate,
       endDate,
@@ -104,7 +104,7 @@ export class BookingsController {
       @Query('page') page = '1',
       @Query('limit') limit = '10',
   ) {
-    return this.bookingsService.findByService(serviceId, {
+    return this.bookingsService.findBookingsByService(serviceId, {
       status,
       startDate,
       endDate,
@@ -134,7 +134,7 @@ export class BookingsController {
     },
   })
   update(@Param('id') id: string, @Body() updateBookingDto: any) {
-    return this.bookingsService.update(id, updateBookingDto);
+    return this.bookingsService.updateBooking(id, updateBookingDto);
   }
 
   @Delete(':id')
@@ -143,7 +143,7 @@ export class BookingsController {
   @ApiResponse({ status: 200, description: 'Бронирование успешно удалено.' })
   @ApiResponse({ status: 404, description: 'Бронирование не найдено.' })
   remove(@Param('id') id: string) {
-    return this.bookingsService.remove(id);
+    return this.bookingsService.removeBooking(id);
   }
 
   @Post('pay')
@@ -159,7 +159,6 @@ export class BookingsController {
       @Req() req: RawBodyRequest<ExpressRequest>,
       @Res() res: Response
   ) {
-    console.log('WEBHOOK!!!!!!!!!!!');
     let event: Stripe.Event;
     const signature = req.headers['stripe-signature'];
     try {

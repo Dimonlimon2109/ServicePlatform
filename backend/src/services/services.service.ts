@@ -25,9 +25,8 @@ type UpdateServiceData = Partial<Omit<CreateServiceData, 'providerId'>>;
 export class ServicesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateServiceData) {
+  async createService(data: CreateServiceData) {
     const { title, description, price, category, providerId, photoPath, duration } = data;
-    console.log('Перед Insert в бд: ', photoPath);
     return this.prisma.service.create({
       data: {
         title,
@@ -47,7 +46,7 @@ export class ServicesService {
     });
   }
 
-  async findAll(page: number, limit: number, filters: ServiceFilters) {
+  async findAllServices(page: number, limit: number, filters: ServiceFilters) {
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -97,7 +96,7 @@ export class ServicesService {
     };
   }
 
-  async findOne(id: string) {
+  async findService(id: string) {
     const service = await this.prisma.service.findUnique({
       where: { id },
       include: {
@@ -111,9 +110,8 @@ export class ServicesService {
     });
 
     if (!service) {
-      throw new NotFoundException('Service not found');
+      throw new NotFoundException('Услуга не найдена');
     }
-
     return service;
   }
 
@@ -153,7 +151,7 @@ export class ServicesService {
     }
   }
 
-  async update(id: string, data: UpdateServiceData, userId: string) {
+  async updateService(id: string, data: UpdateServiceData, userId: string) {
     const service = await this.prisma.service.findUnique({ where: { id } });
 
     if (!service) {
@@ -177,10 +175,8 @@ export class ServicesService {
   }
 
 
-  async remove(id: string, userId: string, userType:string) {
-    const service = await this.findOne(id);
-    console.log(service);
-    console.log(userId);
+  async removeService(id: string, userId: string, userType:string) {
+    const service = await this.findService(id);
     if (service.providerId !== userId && userType !== 'ADMIN') {
       throw new ForbiddenException('У вас нет прав на удаление этого сервиса');
     }

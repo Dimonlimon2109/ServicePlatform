@@ -67,7 +67,7 @@ export class ServicesController {
     console.log('BODY:', createServiceDto);
     console.log('USER:', req.user);
     const photoPath = this.uploadService.getImagePath(photo);
-    return this.servicesService.create({
+    return this.servicesService.createService({
       ...createServiceDto,
       photoPath,
       providerId: req.user.id,
@@ -81,7 +81,7 @@ export class ServicesController {
   @ApiQuery({ name: 'category', required: false, type: String })
   @ApiQuery({ name: 'minRating', required: false, type: Number })
   @ApiQuery({ name: 'title', required: false, type: String })
-  async findAllWithFilters(
+  async findAll(
       @Query('page') page: string = '1',
       @Query('limit') limit: string = '10',
       @Query('minPrice') minPrice?: string,
@@ -101,7 +101,7 @@ export class ServicesController {
       title
     };
 
-    return this.servicesService.findAll(pageNumber, limitNumber, filters);
+    return this.servicesService.findAllServices(pageNumber, limitNumber, filters);
   }
 
 
@@ -109,8 +109,8 @@ export class ServicesController {
   @ApiOperation({ summary: 'Получить услугу по ID' })
   @ApiParam({ name: 'id', description: 'ID услуги', type: 'string' })
   @ApiResponse({ status: 200, description: 'Информация об услуге.' })
-  findOne(@Param('id') id: string) {
-    return this.servicesService.findOne(id);
+  findService(@Param('id') id: string) {
+    return this.servicesService.findService(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -154,14 +154,6 @@ export class ServicesController {
     return this.servicesService.findByProvider(req.user.id, pageNumber, limitNumber);
   }
 
-  @Get('category/:category')
-  @ApiOperation({ summary: 'Получить услуги по категории' })
-  @ApiParam({ name: 'category', description: 'Категория услуги', type: 'string' })
-  @ApiResponse({ status: 200, description: 'Услуги указанной категории.' })
-  findByCategory(@Param('category') category: string) {
-    return this.servicesService.findByCategory(category);
-  }
-
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @Put(':id')
@@ -193,7 +185,7 @@ export class ServicesController {
       @Request() req,
   ): Promise<any> {
     const photoPath = this.uploadService.getImagePath(photo);
-    return this.servicesService.update(
+    return this.servicesService.updateService(
         id,
         {
           ...updateServiceDto,
@@ -211,6 +203,6 @@ export class ServicesController {
   @ApiParam({ name: 'id', description: 'ID услуги для удаления', type: 'string' })
   @ApiResponse({ status: 200, description: 'Услуга успешно удалена.' })
   remove(@Param('id') id: string, @Request() req) {
-    return this.servicesService.remove(id, req.user.id, req.user.userType);
+    return this.servicesService.removeService(id, req.user.id, req.user.userType);
   }
 }

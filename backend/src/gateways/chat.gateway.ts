@@ -1,5 +1,3 @@
-// src/gateway/chat.gateway.ts
-
 import {
     WebSocketGateway,
     SubscribeMessage,
@@ -12,12 +10,10 @@ import { ChatService } from '../services/chat.service';
 import { SendMessageDto } from '../dto/send-message.dto';
 import { Socket } from 'socket.io';
 
-// Настройка GateWay с поддержкой CORS
 @WebSocketGateway({ cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     constructor(private readonly chatService: ChatService) {}
 
-    // Хранилище соответствий userId -> socketId
     private userSockets = new Map<string, string>();
 
     handleConnection(client: Socket) {
@@ -35,7 +31,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
     }
 
-    // Регистрация пользователя по userId
     @SubscribeMessage('register')
     handleRegister(@MessageBody() userId: string, @ConnectedSocket() client: Socket) {
         this.userSockets.set(userId, client.id);
@@ -43,14 +38,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         console.log(`User ${userId} registered with socket ${client.id}`);
     }
 
-    // Обработка входящего сообщения
     @SubscribeMessage('send_message')
     async handleMessage(
         @MessageBody() data: SendMessageDto,
         @ConnectedSocket() client: Socket,
     ) {
 
-        console.log(data.receiverId);
         const message = await this.chatService.saveMessage(data);
 
         const receiverSocketId = this.userSockets.get(data.receiverId);

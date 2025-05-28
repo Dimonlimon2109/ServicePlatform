@@ -22,7 +22,7 @@ export class StripeService {
         bookingId: string;
         amount: number;
     }) {
-        const booking = await this.bookingsService.findOne(data.bookingId);
+        const booking = await this.bookingsService.findBooking(data.bookingId);
         return this.stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [
@@ -45,10 +45,10 @@ export class StripeService {
             cancel_url: 'http://localhost:3001/',
             customer_email: booking.user.email,
             payment_intent_data: {
-                receipt_email: booking.user.email, // Явно указываем email для чека
+                receipt_email: booking.user.email,
             },
             invoice_creation: {
-                enabled: true, // Включаем автоматическое создание инвойса
+                enabled: true,
             },
         });
     }
@@ -65,7 +65,7 @@ export class StripeService {
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object as Stripe.Checkout.Session;
             const bookingId = session.metadata.bookingId;
-            const booking = await this.bookingsService.findOne(bookingId);
+            const booking = await this.bookingsService.findBooking(bookingId);
 
                 const invoice = await this.stripe.invoices.retrieve(session.invoice as string);
 
@@ -77,7 +77,7 @@ export class StripeService {
                     serviceTitle: `Бронирование #${bookingId}`
                 });
 
-                await this.bookingsService.update(bookingId, { status: 'PAID' });
+                await this.bookingsService.updateBooking(bookingId, { status: 'PAID' });
         }
     }
 

@@ -84,7 +84,7 @@ const ServiceBookingsList = ({
     };
 
     const statusLabels: Record<string, string> = {
-        PENDING: 'Ожидает',
+        PENDING: 'В ожидании',
         CONFIRMED: 'Подтверждено',
         PAID: 'Оплачено',
         COMPLETED: 'Завершено',

@@ -28,7 +28,7 @@ import {Role} from "../enums/role.enum";
 import {RolesGuard} from "../guards/roles.guard";
 import {Roles} from "../decorators/roles.decorator";
 
-@ApiTags('Favorites - Избранные услуги')
+@ApiTags('Favorites')
 @ApiBearerAuth('access-token')
 @Roles(Role.User)
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -86,7 +86,7 @@ export class FavoritesController {
             },
         },
     })
-    addToFavorites(@Body() dto: CreateFavoriteDto) {
+    create(@Body() dto: CreateFavoriteDto) {
         return this.favoritesService.addToFavorites(dto);
     }
 
@@ -105,7 +105,7 @@ export class FavoritesController {
             },
         },
     })
-    removeFromFavorites(
+    remove(
         @Param('id') serviceId: string,
         @Request() req: any,
     ) {
@@ -162,7 +162,7 @@ export class FavoritesController {
             },
         },
     })
-    getUserFavorites(@Param('userId') userId: string) {
+    getByUser(@Param('userId') userId: string) {
         return this.favoritesService.getUserFavorites(userId);
     }
 }

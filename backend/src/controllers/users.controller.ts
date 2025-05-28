@@ -43,7 +43,7 @@ export class UsersController {
   ) {
     const page = parseInt(filters.page ?? '1', 10);
     const limit = parseInt(filters.limit ?? '10', 10);
-    return this.usersService.findAll(Number(page), Number(limit), filters);
+    return this.usersService.findAllUsers(Number(page), Number(limit), filters);
   }
 
   @Get(':id')
@@ -54,7 +54,7 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Не авторизован.' })
   @ApiResponse({ status: 404, description: 'Пользователь не найден.' })
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+    return this.usersService.findUser(id);
   }
 
   @Get('profile/me')
@@ -65,7 +65,7 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Не авторизован.' })
   @ApiResponse({ status: 404, description: 'Пользователь не найден.' })
   findMyProfile(@Request() req) {
-    return this.usersService.findOne(req.user.id);
+    return this.usersService.findUser(req.user.id);
   }
 
   @Put(':id')
@@ -95,7 +95,7 @@ export class UsersController {
     if (req.user.id !== id) {
       return { message: 'Вы можете обновлять только свой собственный профиль.' };
     }
-    return this.usersService.update(id, updateUserDto);
+    return this.usersService.updateUser(id, updateUserDto);
   }
 
   @Put(':id/password')
@@ -140,7 +140,7 @@ export class UsersController {
       );
     }
 
-    return this.usersService.changePassword(
+    return this.usersService.changeUserPassword(
         id,
         changePasswordDto.currentPassword,
         changePasswordDto.newPassword,
@@ -159,7 +159,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'Пользователь не найден.' })
   remove(@Param('id') id: string, @Request() req) {
     // Разрешить пользователям удалять только свой профиль, если они не администраторы
-    return this.usersService.remove(id);
+    return this.usersService.removeUser(id);
   }
 
 

@@ -102,7 +102,7 @@ export default function ServiceForm() {
                     },
                 });
             }
-            navigate('/catalog');
+            navigate('/');
         } catch (err) {
             console.error('Ошибка при сохранении услуги:', err);
         }

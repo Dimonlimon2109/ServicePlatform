@@ -45,8 +45,6 @@
           profilePhotoPath : imagePath
         },
       });
-
-      // Generate tokens
       const tokens = await this.jwtTokensService.generateTokens(user.id, user.email, user.userType as Role);
       await this.jwtTokensService.storeRefreshToken(user.id, tokens.refreshToken);
 

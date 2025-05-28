@@ -18,7 +18,7 @@ export class FavoritesService {
 
         if (existing) {
             throw new HttpException(
-                'Service already in favorites',
+                'Сервис уже находится в избранном',
                 HttpStatus.BAD_REQUEST,
             );
         }

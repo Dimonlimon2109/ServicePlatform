@@ -12,7 +12,7 @@ interface UserFilters {
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: {
+  async createUser(data: {
     email: string;
     password: string;
     firstName: string;
@@ -42,7 +42,7 @@ export class UsersService {
     });
   }
 
-  async findAll(page: number, limit: number, filters: UserFilters) {
+  async findAllUsers(page: number, limit: number, filters: UserFilters) {
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -90,7 +90,7 @@ export class UsersService {
     };
   }
 
-  async findOne(id: string) {
+  async findUser(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
       select: {
@@ -113,14 +113,12 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, data: {
+  async updateUser(id: string, data: {
     firstName?: string;
     lastName?: string;
     phone?: string;
     profilePhotoPath?: string;
   }) {
-   const user =  await this.findOne(id);
-
 
     return this.prisma.user.update({
       where: { id },
@@ -138,7 +136,7 @@ export class UsersService {
     });
   }
 
-  async changePassword(
+  async changeUserPassword(
       id: string,
       currentPassword: string,
       newPassword: string,
@@ -171,18 +169,17 @@ export class UsersService {
     return true;
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async removeUser(id: string) {
+    await this.findUser(id);
 
     await this.prisma.user.delete({
       where: { id },
     });
 
-    return { message: 'User deleted successfully' };
+    return { message: 'Пользователь успешно удален' };
   }
 
   async toggleBlockUser(id: string, isBlocked: boolean) {
-    const user = await this.findOne(id);
 
     return this.prisma.user.update({
       where: { id },

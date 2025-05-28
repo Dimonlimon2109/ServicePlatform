@@ -19,7 +19,7 @@ export class BookingsService {
   constructor(private prisma: PrismaService,
               private mailService: MailService) {}
 
-  async create(data: CreateBookingData) {
+  async createBooking(data: CreateBookingData) {
     return this.prisma.booking.create({
       data: {
         serviceId: data.serviceId,
@@ -43,7 +43,7 @@ export class BookingsService {
     });
   }
 
-  async findOne(id: string) {
+  async findBooking(id: string) {
     const booking = await this.prisma.booking.findUnique({
       where: { id },
       include: {
@@ -59,7 +59,7 @@ export class BookingsService {
     return booking;
   }
 
-  async findByUser(
+  async findBookingsByUser(
       userId: string,
       options?: {
         status?: string;
@@ -112,7 +112,7 @@ export class BookingsService {
     };
   }
 
-  async findByService(
+  async findBookingsByService(
       serviceId: string,
       options?: {
         status?: string;
@@ -165,7 +165,7 @@ export class BookingsService {
   }
 
 
-  async update(id: string, data: UpdateBookingData) {
+  async updateBooking(id: string, data: UpdateBookingData) {
     const booking = await this.prisma.booking.update({
       where: { id },
       data: {
@@ -182,7 +182,6 @@ export class BookingsService {
       },
     });
 
-    // Отправляем уведомление, если статус изменился и он не равен 'PAID'
     if (data.status && data.status !== 'PAID') {
       await this.mailService.sendOrderStatusChangeEmail({
         to: booking.user.email,
@@ -196,8 +195,8 @@ export class BookingsService {
     return booking;
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async removeBooking(id: string) {
+    await this.findBooking(id);
 
     await this.prisma.booking.delete({
       where: { id },

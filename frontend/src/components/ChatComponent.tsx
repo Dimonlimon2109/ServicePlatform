@@ -45,7 +45,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ receiverId }) => {
                 // Подключение к сокету
                 socket = io('http://localhost:3000');
                 socket.on('connect', () => {
-                    socket.emit('register', userId);
+                    socket.emit('register', user?.id);
                 });
 
                 socket.on('receive_message', (message: Message) => {
@@ -64,7 +64,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ receiverId }) => {
                 socket.disconnect();
             }
         };
-    }, [receiverId]); // Заново перезапускать, если receiverId изменится
+    }, [receiverId, user]); // Заново перезапускать, если receiverId изменится
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
